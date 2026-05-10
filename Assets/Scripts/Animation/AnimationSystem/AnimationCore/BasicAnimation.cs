@@ -17,5 +17,6 @@ public class BasicAnimation : IAnimation
         animator.SetBool("Sprint", state.isSprinting);
         animator.SetBool("Grounded", state.isGrounded);
         animator.SetBool("Dashing", state.isDashing);
+        animator.SetFloat("VerticalVelocity", state.velocity.y);
     }
 }

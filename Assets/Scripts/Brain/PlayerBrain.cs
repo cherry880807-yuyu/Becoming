@@ -28,6 +28,7 @@ public class PlayerBrain : BaseBrain
         ActorData.Rigidbody = GetComponent<Rigidbody2D>();
         ActorData.Animator = GetComponent<Animator>();
         ActorData.Collider = GetComponent<Collider2D>();
+        ActorData.SpriteRenderer = GetComponent<SpriteRenderer>();
         ActorData.MovementSystem = new MovementSystem(new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
         ActorData.DashSystem = new DashSystem(new PlayerDash_TypeA(dashData), this);
         ActorData.AttackSystem = new AttackSystem(new PlayerAttack_TypeA());
@@ -56,11 +57,12 @@ public class PlayerBrain : BaseBrain
         ReadInput();
         HandleMovementState();
         HandleStamina();
-
-        //ActorData.AnimationSystem?.SetState(BuildState());
+        HandleFacing();
+        ActorData.AnimationSystem?.SetState(BuildState());
     }
     private void FixedUpdate()
     {
+        HandleAirPhysics();
         ActorData.MovementSystem.Move(ActorData.Rigidbody, moveInput);
     }
     // =========================
@@ -70,12 +72,17 @@ public class PlayerBrain : BaseBrain
     {
         moveInput = input.Player.Move.ReadValue<Vector2>();
         if (moveInput != Vector2.zero) lastMoveDir = moveInput.normalized;
+        ActorData.Facing = moveInput.normalized;
         isSprinting = input.Player.Sprint.IsPressed();
     }
     // =========================
     // ACTION
     // =========================
-
+    private void HandleFacing()
+    {
+        if (ActorData.Facing == Vector2.zero) return;
+        ActorData.SpriteRenderer.flipX = ActorData.Facing.x < 0;
+    }
     private void HandleMovementState()
     {
         ActorData.MovementSystem.SetSprint(isSprinting);
@@ -83,6 +90,23 @@ public class PlayerBrain : BaseBrain
     private void HandleStamina()
     {
         ActorData.StaminaSystem?.Regen(Time.deltaTime);
+    }
+    private void HandleAirPhysics()
+    {
+        Rigidbody2D rb = ActorData.Rigidbody;
+
+        if (IsGrounded()) return;
+
+        float gravity = movementData.gravity;              // 例如 -30
+        float fallMultiplier = movementData.fallMultiplier; // 例如 2.5
+
+        Vector2 v = rb.velocity;
+
+        // 下落加速（重點）
+        if (v.y < 0) v.y += gravity * fallMultiplier * Time.fixedDeltaTime;
+        else v.y += gravity * Time.fixedDeltaTime;
+    
+        rb.velocity = v;
     }
 
     private void OnDash(InputAction.CallbackContext ctx)

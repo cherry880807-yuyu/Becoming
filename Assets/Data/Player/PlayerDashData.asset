@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09b35d5ceca9797489875b3695811037, type: 3}
   m_Name: PlayerDashData
   m_EditorClassIdentifier: 
-  dashDistance: 3
+  dashDistance: 5
   dashDuration: 0.15
   dashCooldown: 0.8
   dashCost: 30

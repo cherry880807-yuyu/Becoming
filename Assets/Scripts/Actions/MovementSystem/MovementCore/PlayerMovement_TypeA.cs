@@ -6,7 +6,6 @@ public class PlayerMovement_TypeA : IMovementCore, ISprintable
 {
     private float moveSpeed;
     private float sprintSpeed;
-
     private bool isSprinting;
 
     public PlayerMovement_TypeA(float moveSpeed, float sprintSpeed)
@@ -19,7 +18,6 @@ public class PlayerMovement_TypeA : IMovementCore, ISprintable
     {
         float speed = isSprinting ? sprintSpeed : moveSpeed;
         rb.velocity = new Vector2(input.x * speed, rb.velocity.y);
-        //animator.SetFloat("Speed", moveInput.magnitude);
     }
 
     public void SetSprint(bool sprint)

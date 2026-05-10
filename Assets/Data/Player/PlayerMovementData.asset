@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   sprintSpeed: 8
-  jumpForce: 12
+  jumpForce: 15
+  gravity: -9.8
+  fallMultiplier: 2.5

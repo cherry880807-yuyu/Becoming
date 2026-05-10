@@ -5,7 +5,7 @@ public class MovementSystem
 {
     private IMovementCore core;
     private List<IMovementModifier> modifiers = new();
-
+    public Vector2 Facing { get; private set; }
     public MovementSystem(IMovementCore core)
     {
         this.core = core;
