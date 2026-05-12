@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,8 +10,10 @@ public class PlayerBrain : BaseBrain
     [SerializeField] private MovementData movementData;
     [SerializeField] private DashData dashData;
     [SerializeField] private StaminaData staminaData;
+    [SerializeField] private ComboData comboData;
 
     public ActorData ActorData { get; private set; }
+
 
     private PlayerInputActions input;
 
@@ -31,8 +34,8 @@ public class PlayerBrain : BaseBrain
         ActorData.SpriteRenderer = GetComponent<SpriteRenderer>();
         ActorData.MovementSystem = new MovementSystem(new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
         ActorData.DashSystem = new DashSystem(new PlayerDash_TypeA(dashData), this);
-        ActorData.AttackSystem = new AttackSystem(new PlayerAttack_TypeA());
-        ActorData.AnimationSystem = new AnimationSystem(new BasicAnimation(ActorData.Animator));
+        ActorData.AttackSystem = new AttackSystem(new PlayerAttackBehavior(comboData),ActorData);
+        ActorData.AnimationSystem = new AnimationSystem(ActorData.Animator);
         ActorData.StaminaSystem = new StaminaSystem(staminaData);
 
     }
@@ -58,7 +61,13 @@ public class PlayerBrain : BaseBrain
         HandleMovementState();
         HandleStamina();
         HandleFacing();
-        ActorData.AnimationSystem?.SetState(BuildState());
+        ActorData.AnimationSystem?.SetMovementState(new MovementState
+        {
+            velocity = ActorData.Rigidbody.velocity,
+            isGrounded = IsGrounded(),
+            isDashing = ActorData.DashSystem.IsDashing,
+            isSprinting = isSprinting
+        });
     }
     private void FixedUpdate()
     {
@@ -81,7 +90,7 @@ public class PlayerBrain : BaseBrain
     private void HandleFacing()
     {
         if (ActorData.Facing == Vector2.zero) return;
-        ActorData.SpriteRenderer.flipX = ActorData.Facing.x < 0;
+        transform.localScale = new Vector3(ActorData.Facing.x < 0 ? -1 : 1, 1, 1);
     }
     private void HandleMovementState()
     {
@@ -105,7 +114,7 @@ public class PlayerBrain : BaseBrain
         // 下落加速（重點）
         if (v.y < 0) v.y += gravity * fallMultiplier * Time.fixedDeltaTime;
         else v.y += gravity * Time.fixedDeltaTime;
-    
+
         rb.velocity = v;
     }
 
@@ -117,7 +126,7 @@ public class PlayerBrain : BaseBrain
     }
     private void OnAttack(InputAction.CallbackContext ctx)
     {
-        ActorData.AttackSystem.Attack();
+        //ActorData.AttackSystem.Attack(transform, 10);
     }
     private void OnJump(InputAction.CallbackContext ctx)
     {
@@ -143,17 +152,5 @@ public class PlayerBrain : BaseBrain
         );
         return hit.collider != null;
     }
-
-    private CharacterState BuildState()
-    {
-        return new CharacterState
-        {
-            velocity = ActorData.Rigidbody.velocity,
-            isGrounded = IsGrounded(),
-            isDashing = ActorData.DashSystem.IsDashing,
-            isSprinting = isSprinting
-        };
-    }
-
 
 }

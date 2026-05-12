@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public interface IAttack
+public interface IAttackBehavior
 {
-    void Attack();
+    void Execute(ActorData data);
 }

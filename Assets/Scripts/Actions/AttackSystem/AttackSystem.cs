@@ -4,15 +4,18 @@ using UnityEngine;
 
 public class AttackSystem
 {
-    private IAttack attack;
+    private IAttackBehavior behavior;
+    private ActorData actorData;
 
-    public AttackSystem(IAttack attack)
+    public AttackSystem(IAttackBehavior behavior,ActorData actorData)
     {
-        this.attack = attack;
+        this.behavior = behavior;
+        this.actorData=actorData;
     }
+
 
     public void Attack()
     {
-        attack.Attack();
+        behavior.Execute(actorData);
     }
 }

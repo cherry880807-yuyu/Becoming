@@ -2,17 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AnimationSystem
+public class AnimationSystem : IMovementAnimation, ICombatAnimation
 {
-    private IAnimation animation;
+    private Animator animator;
 
-    public AnimationSystem(IAnimation animation)
+    public AnimationSystem(Animator animator)
     {
-        this.animation = animation;
+        this.animator = animator;
     }
 
-    public void SetState(CharacterState state)
+    public void SetMovementState(MovementState state)
     {
-        animation.SetState(state);
+        animator.SetFloat("Speed", state.velocity.magnitude);
+        animator.SetBool("Sprint", state.isSprinting);
+        animator.SetBool("Grounded", state.isGrounded);
+        animator.SetBool("Dashing", state.isDashing);
+        animator.SetFloat("VerticalVelocity", state.velocity.y);
+    }
+    public void PlayAttack(int index)
+    {
+        animator.SetTrigger($"Attack{index}");
     }
 }
