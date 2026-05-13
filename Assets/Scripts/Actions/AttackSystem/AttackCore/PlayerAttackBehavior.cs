@@ -13,19 +13,20 @@ public class PlayerAttackBehavior : IAttackBehavior
         this.comboData = comboData;
     }
 
-    public void Execute(ActorData actorData)
+    public int Execute(ActorData actorData)
     {
-        if (comboData.steps.Length == 0) return;
+        if (comboData.steps.Length == 0) return 0;
 
         if (Time.time - lastTime > comboData.resetTime) index = 0;
         index %= comboData.steps.Length;
         var step = comboData.steps[index];
-        Weapon wp = comboData.weaponPrefab.GetComponent<Weapon>();
-        wp.SetStep(step);
+        comboData.weaponPrefab.GetComponent<Weapon>().SetStep(step);
 
         actorData.AnimationSystem.PlayAttack(index);
 
         index++;
         lastTime = Time.time;
+
+        return step.damage;
     }
 }

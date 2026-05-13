@@ -1,38 +1,46 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    [SerializeField] private ComboData comboData;
+    public ComboData ComboData => comboData;
+    private Collider2D hitbox;
 
-    private bool active = true;
     private ComboStep currentStep;
+
+
+    void Awake()
+    {
+        hitbox = GetComponent<Collider2D>();
+    }
 
     public void SetStep(ComboStep step)
     {
         currentStep = step;
     }
-    public void EnableHitbox()
+
+    public void DoHitCheck(int damage)
     {
-        active = true;
-    }
 
-    public void DisableHitbox()
-    {
-        active = false;
-    }
+        Collider2D[] hits = Physics2D.OverlapBoxAll(
+            hitbox.bounds.center,
+            hitbox.bounds.size,
+            0f,
+            LayerMask.GetMask("Enemy")
+        );
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!active) return;
-
-        IDamageable dmg = other.GetComponent<IDamageable>();
-
-
-        if (dmg != null)
+        foreach (var hit in hits)
         {
-            dmg.TakeDamage(10);
-            Debug.Log(dmg+"受到"+10+"點傷害");
+            IDamageable dmg = hit.GetComponent<IDamageable>();
+
+            if (dmg != null)
+            {
+                dmg.TakeDamage(damage);
+            }
         }
+
     }
+
+
 }

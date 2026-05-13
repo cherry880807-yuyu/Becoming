@@ -5,5 +5,5 @@ using UnityEngine;
 
 public interface IAttackBehavior
 {
-    void Execute(ActorData data);
+    int Execute(ActorData data);
 }

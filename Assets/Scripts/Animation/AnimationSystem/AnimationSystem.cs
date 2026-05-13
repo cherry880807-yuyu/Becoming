@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AnimationSystem : IMovementAnimation, ICombatAnimation
+public class AnimationSystem 
 {
     private Animator animator;
 
@@ -23,4 +23,13 @@ public class AnimationSystem : IMovementAnimation, ICombatAnimation
     {
         animator.SetTrigger($"Attack{index}");
     }
+     public void PlayHit()
+    {
+
+    }
+     public void PlayDeath()
+    {
+
+    }
+
 }

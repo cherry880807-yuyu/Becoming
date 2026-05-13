@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class UIHealthBar : MonoBehaviour
 {
-    [SerializeField] HealthSystem target;
+    [SerializeField] BaseBrain target;
     private Image hpBar;
 
     private float displayHP;
@@ -29,7 +29,7 @@ public class UIHealthBar : MonoBehaviour
 
     void Start()
     {
-        UpdateBar(target.currentHP);
+        UpdateBar(target.CurrentHP);
     }
     void Update()
     {
@@ -40,7 +40,7 @@ public class UIHealthBar : MonoBehaviour
 
     void UpdateBar(int hp)
     {
-        targetHP = hp / (float)target.maxHP;
+        targetHP = hp / (float)target.MaxHP;
     }
 
 

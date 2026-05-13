@@ -7,6 +7,8 @@ public class AttackSystem
     private IAttackBehavior behavior;
     private ActorData actorData;
 
+     public int CurrentDamage { get; private set; }
+
     public AttackSystem(IAttackBehavior behavior,ActorData actorData)
     {
         this.behavior = behavior;
@@ -16,6 +18,6 @@ public class AttackSystem
 
     public void Attack()
     {
-        behavior.Execute(actorData);
+        CurrentDamage=behavior.Execute(actorData);
     }
 }

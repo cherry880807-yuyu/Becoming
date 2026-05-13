@@ -4,13 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerBrain : BaseBrain
+public class PlayerBrain : BaseBrain, IDamageable
 {
     [Header("Data")]
     [SerializeField] private MovementData movementData;
     [SerializeField] private DashData dashData;
     [SerializeField] private StaminaData staminaData;
-    [SerializeField] private ComboData comboData;
+
+     [Header("Weapon")]
+
+    [SerializeField] private Weapon wp;
+
+
 
     public ActorData ActorData { get; private set; }
 
@@ -21,6 +26,9 @@ public class PlayerBrain : BaseBrain
     private Vector2 lastMoveDir;
 
     private bool isSprinting;
+
+
+
     // =========================
     // LIFE
     // =========================
@@ -34,9 +42,10 @@ public class PlayerBrain : BaseBrain
         ActorData.SpriteRenderer = GetComponent<SpriteRenderer>();
         ActorData.MovementSystem = new MovementSystem(new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
         ActorData.DashSystem = new DashSystem(new PlayerDash_TypeA(dashData), this);
-        ActorData.AttackSystem = new AttackSystem(new PlayerAttackBehavior(comboData),ActorData);
+        ActorData.AttackSystem = new AttackSystem(new PlayerAttackBehavior(wp.ComboData), ActorData);
         ActorData.AnimationSystem = new AnimationSystem(ActorData.Animator);
         ActorData.StaminaSystem = new StaminaSystem(staminaData);
+
 
     }
     private void OnEnable()
@@ -126,7 +135,7 @@ public class PlayerBrain : BaseBrain
     }
     private void OnAttack(InputAction.CallbackContext ctx)
     {
-        //ActorData.AttackSystem.Attack(transform, 10);
+        ActorData.AttackSystem.Attack();
     }
     private void OnJump(InputAction.CallbackContext ctx)
     {
@@ -151,6 +160,13 @@ public class PlayerBrain : BaseBrain
             LayerMask.GetMask("Ground")
         );
         return hit.collider != null;
+    }
+    //Animation Event
+
+
+    public void Attack()
+    {
+       wp.DoHitCheck(ActorData.AttackSystem.CurrentDamage);
     }
 
 }

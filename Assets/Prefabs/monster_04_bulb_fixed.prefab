@@ -336,7 +336,6 @@ GameObject:
   - component: {fileID: 990192150972989516}
   - component: {fileID: 3173282216721607882}
   - component: {fileID: 6983926300286365126}
-  - component: {fileID: 6368796802452095496}
   m_Layer: 8
   m_Name: monster_04_bulb_fixed
   m_TagString: Untagged
@@ -535,23 +534,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce925aec9717fb34aac3427302987bd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterData: {fileID: 11400000, guid: ab23e9c5bbaa7374c89c771fd3c0db87, type: 2}
   moveSpeed: 3
---- !u!114 &6368796802452095496
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6726707969570925795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0044072940f57c468d7c1ca2fea0cb3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHP: 100
-  currentHP: 0
-  shield: 0
-  isInvincible: 0
 --- !u!1 &7004282677611654629
 GameObject:
   m_ObjectHideFlags: 0
@@ -671,7 +655,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 649f836b24b1e004d87c9b9635fab9e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 6368796802452095496}
+  target: {fileID: 6983926300286365126}
 --- !u!1 &7543472377535059388
 GameObject:
   m_ObjectHideFlags: 0
