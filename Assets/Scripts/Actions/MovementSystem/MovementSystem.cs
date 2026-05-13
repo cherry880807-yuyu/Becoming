@@ -4,7 +4,8 @@ using UnityEngine;
 public class MovementSystem
 {
     private IMovementCore core;
-    private List<IMovementModifier> modifiers = new();
+    private List<IMovementModifier> modifiers = new(); //例如：減速（slow）
+     private List<IMovementEffect> effects = new();
     public Vector2 Facing { get; private set; }
     public MovementSystem(IMovementCore core)
     {
@@ -28,6 +29,11 @@ public class MovementSystem
         }
 
         core.Move(rb, input);
+
+        foreach (var effect in effects)
+        {
+            effect.Apply();
+        }
     }
     public void SetSprint(bool value)
     {
@@ -36,4 +42,6 @@ public class MovementSystem
             sprintableCore.SetSprint(value);
         }
     }
+
+    
 }

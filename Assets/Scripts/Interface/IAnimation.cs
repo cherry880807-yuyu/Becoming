@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IAnimation
+public interface IMovementAnimation
 {
-    void SetState(CharacterState state);
+    void SetMovementState(MovementState state);
 }

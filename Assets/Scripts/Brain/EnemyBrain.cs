@@ -1,21 +1,29 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyBrain : BaseBrain
 {
     public ActorData ActorData { get; private set; }
 
+    [SerializeField] private float moveSpeed = 3f;
+
+    private Transform target;
+
     private void Awake()
     {
-        ActorData = BuildActorData();
+        ActorData = new ActorData
+        {
+
+           Rigidbody = GetComponent<Rigidbody2D>(),
+            SpriteRenderer = GetComponent<SpriteRenderer>()
+        };
+
+        target = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
-    protected virtual ActorData BuildActorData()
+
+    protected override void Update()
     {
-        ActorData ActorData = new();
-
-
-        return ActorData;
+        if (target == null) return;
     }
+
 }
