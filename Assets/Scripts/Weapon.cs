@@ -1,12 +1,14 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
-    [SerializeField] private ComboData comboData;
-    public ComboData ComboData => comboData;
+    [SerializeField] private ComboDataSO comboData;
+    public ComboDataSO ComboDataSO => comboData;
     private Collider2D hitbox;
 
+    [SerializeField]
     private ComboStep currentStep;
 
 
@@ -36,10 +38,31 @@ public class Weapon : MonoBehaviour
 
             if (dmg != null)
             {
-                dmg.TakeDamage(damage);
+                Vector2 hitDir =(hit.transform.position - transform.position).normalized;
+
+                DamageInfo info = new DamageInfo(damage,hitDir,currentStep.knockbackForce,currentStep.hitStopTime);
+                dmg.TakeDamage(info);
+                Debug.Log($"{hit.name} Get {damage} damage!");
+                HitStop(currentStep.hitStopTime);
+                EventBus.Publish<AttackThreeTimesEvent>(new AttackThreeTimesEvent());
+
             }
         }
 
+    }
+
+    void HitStop(float duration, float timeScale = 0f)
+    {
+        StartCoroutine(Stop(duration, timeScale));
+    }
+
+    IEnumerator Stop(float duration, float timeScale)
+    {
+        Time.timeScale = timeScale;
+        Debug.Log("僵直");
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = 1f;
+        Debug.Log("僵直結束");
     }
 
 

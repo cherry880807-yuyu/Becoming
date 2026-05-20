@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d7fda5a49806ca4db2f2c1c38ee3e61, type: 3}
+  m_Name: Monster04Character Stats SO
+  m_EditorClassIdentifier: 
+  characterId: 
+  Name: "4\u865F\u602A\u7269"
+  prefab: {fileID: 0}
+  maxHP: 50
+  maxShield: 0
+  patrolSpeed: 2
+  patrolWaitTime: 1.5
+  chaseSpeed: 4.5
+  detectionRange: 6
+  loseTargetRange: 10
+  attackRange: 1.2
+  attackCooldown: 1
+  attackDamage: 10
+  hurtDuration: 0.4
+  knockbackForce: 5

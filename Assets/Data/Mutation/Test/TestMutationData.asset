@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d48c0cd9a90a4344b8633f7328d2ab5, type: 3}
+  m_Name: TestMutationData
+  m_EditorClassIdentifier: 
+  mutationID: 
+  mutationName: "\u9032\u884C\u4E09\u6B21\u653B\u64CA"
+  icon: {fileID: 0}
+  conditions:
+  - {fileID: 11400000, guid: 6f5a86252f4dae24bbb489cd00d2c73d, type: 2}
+  effects:
+  - {fileID: 11400000, guid: 69119b6683c6b6c4b9642a1369997740, type: 2}

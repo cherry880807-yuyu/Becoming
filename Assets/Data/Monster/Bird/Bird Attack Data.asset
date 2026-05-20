@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea799d667af80b34d9d127bc5b511bec, type: 3}
+  m_Name: Bird Attack Data
+  m_EditorClassIdentifier: 
+  orbitRadiusX: 10
+  orbitRadiusY: 3
+  orbitHeightOffset: 8
+  orbitSpeed: 90
+  orbitFollowSpeed: 5
+  orbitRadiusLerpSpeed: 2
+  diveRange: 10
+  minHeightAbovePlayer: 6
+  aimDuration: 0.5
+  windupDuration: 0.35
+  diveDuration: 1
+  recoverDuration: 0.6
+  diveSpeed: 15
+  diveDamage: 20
+  diveCooldown: 5

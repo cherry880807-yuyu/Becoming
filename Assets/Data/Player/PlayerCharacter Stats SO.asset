@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 543e457dd4af5ce44bb25da50c314f90, type: 3}
   m_Name: PlayerCharacter Stats SO
   m_EditorClassIdentifier: 
+  characterId: 
+  Name: "\u767D\u8272\u706B\u67F4\u4EBA"
+  prefab: {fileID: 0}
   maxHP: 100
-  shield: 0
+  maxShield: 0
