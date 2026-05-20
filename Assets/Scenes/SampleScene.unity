@@ -5727,7 +5727,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7279229981567405516, guid: e9a89ad11eaf0914ebd238405364e48c, type: 3}
       propertyPath: m_Name
-      value: Root
+      value: DownBody
+      objectReference: {fileID: 0}
+    - target: {fileID: 7816303369770400366, guid: e9a89ad11eaf0914ebd238405364e48c, type: 3}
+      propertyPath: m_Name
+      value: UpBody
       objectReference: {fileID: 0}
     - target: {fileID: 8794327401657362199, guid: e9a89ad11eaf0914ebd238405364e48c, type: 3}
       propertyPath: wp
