@@ -19,7 +19,7 @@ public class MutationManager : Singleton<MutationManager>
     protected override void Awake()
     {
         base.Awake();
-        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(gameObject);
     }
 
     public void EvaluateMutations(MutationContext context)

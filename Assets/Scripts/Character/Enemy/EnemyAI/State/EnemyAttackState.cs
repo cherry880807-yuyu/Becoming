@@ -11,6 +11,10 @@ public class EnemyAttackState : IState
     private int _LastPatternIndex;
 
     public bool IsFinished { get; private set; }
+    public bool CurrentPatternCanBeInterrupted => _currentPattern.CanBeInterrupted;
+
+
+
 
 
 
@@ -45,8 +49,13 @@ public class EnemyAttackState : IState
     public void Exit()
     {
         _currentPattern?.Exit();
-        IsFinished = false;
     }
+    public void ForceExit()
+    {
+        _currentPattern?.Exit(); // 冷卻在 Exit 裡記錄
+        IsFinished = true;
+    }
+
     protected virtual IEnemyAttackPattern PickPattern()
     {
         // 優先挑現在 CanActivate 的
@@ -68,4 +77,5 @@ public class EnemyAttackState : IState
             if (_patterns[i].CanActivate(_actorData)) return true;
         return false;
     }
+
 }

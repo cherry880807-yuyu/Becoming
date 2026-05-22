@@ -38,13 +38,23 @@ public class Weapon : MonoBehaviour
 
             if (dmg != null)
             {
-                Vector2 hitDir =(hit.transform.position - transform.position).normalized;
+                Vector2 hitDir = (hit.transform.position - transform.position).normalized;
 
-                DamageInfo info = new DamageInfo(damage,hitDir,currentStep.knockbackForce,currentStep.hitStopTime);
+                DamageInfo info = new DamageInfo(damage, hitDir, currentStep.knockbackForce, currentStep.hitStopTime);
                 dmg.TakeDamage(info);
-                Debug.Log($"{hit.name} Get {damage} damage!");
-                HitStop(currentStep.hitStopTime);
-                EventBus.Publish<AttackThreeTimesEvent>(new AttackThreeTimesEvent());
+
+                if (hit.GetComponent<EnemyBrain>().ActorData.IsAlive)
+                {
+                    HitStop(currentStep.hitStopTime);
+                    EventBus.Publish<AttackThreeTimesEvent>(new AttackThreeTimesEvent());
+                }
+                else
+                {
+                    Debug.Log("鞭打屍體!");
+                }
+
+
+
 
             }
         }

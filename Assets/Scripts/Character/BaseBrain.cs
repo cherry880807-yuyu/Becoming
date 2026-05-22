@@ -13,20 +13,22 @@ public abstract class BaseBrain : MonoBehaviour
     public int CurrentHP { get; private set; }
     public int MaxHP { get; private set; }
     public int CurrentShield { get; private set; }
+
     public bool IsAlive => CurrentHP > 0;
+
 
     // ── Events（用 event 關鍵字，防止外部 = 覆蓋） ──────
     public event Action<int> OnHPChanged;   // 傳當前 HP
-    public event Action<int> OnDamageTaken; // 傳最終傷害值
-    public event Action OnDeath;
+
 
     // ── 快取 ────────────────────────────────────────────
     private static readonly WaitForSeconds _hitFlashWait = new WaitForSeconds(0.1f);
 
     // ────────────────────────────────────────────────────
-    protected virtual void Awake() => Init();
-
-    protected abstract void Init();
+    protected virtual void Awake() { }
+    protected virtual void Start() { }
+    protected virtual void OnEnable() { }
+    protected virtual void OnDisable() { }
 
     // ────────────────────────────────
     protected void SetMaxHP(int max)
@@ -40,9 +42,7 @@ public abstract class BaseBrain : MonoBehaviour
     public void ApplyDamage(int rawDamage, Vector2 knockbackDir, float knockbackForce)
     {
         if (!IsAlive) return;
-
         int finalDamage = rawDamage;
-
         // Shield 吸收
         if (CurrentShield > 0)
         {
@@ -50,31 +50,45 @@ public abstract class BaseBrain : MonoBehaviour
             CurrentShield -= absorbed;
             finalDamage -= absorbed;
         }
-
+        Debug.Log($"{name} Get {finalDamage} damage!");
         CurrentHP = Mathf.Max(CurrentHP - finalDamage, 0);
 
-        OnDamageTaken?.Invoke(finalDamage);
         OnHPChanged?.Invoke(CurrentHP);
-
         OnApplyKnockback(knockbackDir, knockbackForce);
 
-        if (CurrentHP <= 0)
-            HandleDeath();
+        EventBus.Publish(new DamageDealtEvent
+        {
+            Damage = finalDamage,
+            WorldPosition = GetDamageTextPosition()
+        });
+
+
+
+
+
+        if (!IsAlive) HandleDeath();
     }
 
     public void ApplyHeal(int amount)
     {
-        if (!IsAlive) return;
+
         CurrentHP = Mathf.Min(CurrentHP + amount, MaxHP);
         OnHPChanged?.Invoke(CurrentHP);
+        EventBus.Publish(new HealEvent
+        {
+            HealAmount = amount,
+            WorldPosition = GetDamageTextPosition()
+        });
+
     }
 
     protected virtual void OnApplyKnockback(Vector2 dir, float force) { }
 
     protected virtual void HandleDeath()
     {
-        OnDeath?.Invoke();
+
     }
+    protected virtual Vector3 GetDamageTextPosition() => transform.position + Vector3.up * 1f;
 
     protected bool CheckGrounded(Collider2D col)
     {

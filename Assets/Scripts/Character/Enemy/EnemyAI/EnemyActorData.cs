@@ -25,7 +25,7 @@ public class EnemyActorData
     public float LastAttackTime { get; set; } = -999f;
 
     // 血量由外部 HealthComponent 管理，這裡只存快取
-    public bool IsAlive { get; set; } = true;
+    public bool IsAlive => Brain.IsAlive;
 
     private Transform root;
 

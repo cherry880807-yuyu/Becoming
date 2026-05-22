@@ -10,7 +10,7 @@ public class PlayerLocator : Singleton<PlayerLocator>
     protected override void Awake()
     {
         base.Awake();
-        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(gameObject);
     }
     
     public void Register(Transform playerTransform)

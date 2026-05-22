@@ -8,8 +8,6 @@ public class StateMachine
     public IState CurrentState { get; private set; }
     public IState PreviousState { get; private set; }
 
-    public event Action<IState, IState> OnStateChanged;
-
     public void Initialize(IState initialState)
     {
         CurrentState = initialState;
@@ -26,7 +24,6 @@ public class StateMachine
         CurrentState = newState;
         CurrentState.Enter();
 
-        OnStateChanged?.Invoke(PreviousState, CurrentState);
     }
 
     public void Update(float deltaTime) => CurrentState?.Update(deltaTime);

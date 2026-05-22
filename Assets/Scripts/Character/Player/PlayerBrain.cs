@@ -22,40 +22,31 @@ public class PlayerBrain : BaseBrain, IDamageable
     private int _lastGroundedFrame = -1;
 
     // ────────────────────────────────────────────────────
-    protected override void Init()
-    {
-        // 走 BaseBrain 統一入口，不直接改 CurrentHP
-        SetMaxHP(characterData.maxHP);
-        SetShield(characterData.maxShield);
-    }
 
+    
     protected override void Awake()
     {
-        base.Awake();
         _input = GetComponent<PlayerInputHandler>();
+        SetMaxHP(characterData.maxHP);
+        SetShield(characterData.maxShield);
+        BuildActorData();
         PlayerLocator.Instance.Register(transform);
     }
 
-    private void Start()
-    {
-        
-        BuildActorData();
-    }
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
+
         _input.OnDashPressed += HandleDash;
         _input.OnAttackPressed += HandleAttack;
         _input.OnJumpPressed += HandleJump;
-        OnDeath += HandleDeath;
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
         _input.OnDashPressed -= HandleDash;
         _input.OnAttackPressed -= HandleAttack;
         _input.OnJumpPressed -= HandleJump;
-        OnDeath -= HandleDeath;
     }
 
     // ── Build ─────────────────────────────────────────────
@@ -114,9 +105,7 @@ public class PlayerBrain : BaseBrain, IDamageable
     // ── IDamageable ───────────────────────────────────────
     public void TakeDamage(DamageInfo info)
     {
-        if (!IsAlive) return;
-
-        PlayerActorData.AnimationSystem.PlayHit();
+        if (IsAlive) PlayerActorData.AnimationSystem.PlayHit();
         ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
     }
 
