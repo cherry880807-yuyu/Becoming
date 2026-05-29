@@ -13,9 +13,34 @@ public struct AttackThreeTimesEvent
     public int attackCount;
 }
 
-
-
-public struct MutationUnlockedEvent
+public struct MutationUnlockedEvent //解所成就
 {
     public MutationDataSO mutation;
+}
+
+
+public struct DamageDealtEvent
+{
+    public int Damage;
+    public Vector3 WorldPosition;
+}
+
+public struct HealEvent
+{
+    public int HealAmount;
+    public Vector3 WorldPosition;
+}
+
+
+
+
+public struct EnemyDiedEvent
+{
+    public Vector3 WorldPosition;
+    public string EnemyId; // 給 MutationManager 用
+}
+
+public struct PlayerDiedEvent
+{
+    
 }

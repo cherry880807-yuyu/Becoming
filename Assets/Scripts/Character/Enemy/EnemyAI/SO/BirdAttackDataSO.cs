@@ -9,7 +9,7 @@ public class BirdAttackDataSO : ScriptableObject
     [Header("盤旋行為")]
     public float orbitRadiusX = 10f;   // 橢圓水平半徑，越大繞越寬
     public float orbitRadiusY = 3f;   // 橢圓垂直半徑，小於X = 扁橢圓
-    public float orbitHeightOffset = 8f;//盤旋中心在玩家上方幾個單位
+    public float orbitHeightOffset = 6f;//盤旋中心在玩家上方幾個單位
     public float orbitSpeed = 90f;//每秒旋轉幾度，越大繞越快
     public float orbitFollowSpeed = 5f;//追上橢圓目標點的速度，太小會脫軌
     public float orbitRadiusLerpSpeed = 2f;//半徑從入場距離收斂到目標的速度

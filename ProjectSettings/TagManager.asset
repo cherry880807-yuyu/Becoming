@@ -44,9 +44,18 @@ TagManager:
   - name: Background
     uniqueID: 2397327109
     locked: 0
+  - name: Platform
+    uniqueID: 3725916387
+    locked: 0
   - name: Player
     uniqueID: 2768357117
     locked: 0
+  - name: Enemy
+    uniqueID: 4096908879
+    locked: 0
   - name: Frontground
     uniqueID: 152573653
+    locked: 0
+  - name: UI
+    uniqueID: 1334821511
     locked: 0

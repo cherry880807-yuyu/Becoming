@@ -10,6 +10,7 @@ public class GroundMeleeAttack : IEnemyAttackPattern
     private float _attackTimer;
 
     public bool IsFinished { get; private set; }
+     public bool CanBeInterrupted => true;
 
     // Animator hash 靜態快取
     private static readonly int AnimAttack = Animator.StringToHash("Attack");

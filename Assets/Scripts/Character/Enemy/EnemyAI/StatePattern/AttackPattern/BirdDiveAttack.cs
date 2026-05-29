@@ -16,6 +16,7 @@ public class BirdDiveAttack : IEnemyAttackPattern
 
     private DivePhase _phase;
     public bool IsFinished { get; private set; }
+    public bool CanBeInterrupted => _phase == DivePhase.Aim || _phase == DivePhase.Windup ||_phase == DivePhase.Recover ;
 
     private Vector2 _diveDir;
     private float _timer;
@@ -48,7 +49,6 @@ public class BirdDiveAttack : IEnemyAttackPattern
     }
     public void Enter(EnemyActorData actor)
     {
-        _lastActivateTime = Time.time;
         _actor = actor;
         IsFinished = false;
         _actor.Rigidbody.velocity = Vector2.zero;
@@ -162,6 +162,7 @@ public class BirdDiveAttack : IEnemyAttackPattern
 
     public void Exit()
     {
+         _lastActivateTime = Time.time;
         _actor.Rigidbody.velocity = Vector2.zero;
     }
 }

@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   steps:
   - damage: 5
-    hitStopTime: 0.08
+    hitStopTime: 0.15
     knockbackForce: 3
     anim: {fileID: 7400000, guid: d5db9d85f33eab9429a8988d68a69381, type: 2}
   - damage: 5
-    hitStopTime: 0.08
+    hitStopTime: 0.15
     knockbackForce: 3
     anim: {fileID: 7400000, guid: 58f8b5d48093d6247bfe1e96bc5edbc0, type: 2}
   - damage: 8
-    hitStopTime: 0.1
+    hitStopTime: 0.15
     knockbackForce: 3
     anim: {fileID: 7400000, guid: 97b99436df466104e9b5d6d7467eaa37, type: 2}
-  resetTime: 0.5
+  resetTime: 2
   weaponPrefab: {fileID: 7646243876799664192, guid: fa32ad381160c204296dbddadb2b582f, type: 3}

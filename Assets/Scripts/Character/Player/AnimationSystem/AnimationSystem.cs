@@ -13,7 +13,7 @@ public class AnimationSystem
 
     public void SetMovementState(MovementState state)
     {
-        animator.SetFloat("Speed", state.velocity.magnitude);
+        animator.SetFloat("Speed", Mathf.Abs(state.velocity.x));
         animator.SetBool("Sprint", state.isSprinting);
         animator.SetBool("Grounded", state.isGrounded);
         animator.SetBool("Dashing", state.isDashing);

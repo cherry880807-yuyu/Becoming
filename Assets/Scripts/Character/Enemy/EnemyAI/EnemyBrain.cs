@@ -32,25 +32,23 @@ public class EnemyBrain : BaseBrain, IDamageable
     private static readonly WaitForSeconds _flashWait = new WaitForSeconds(0.1f);
 
     // ────────────────────────────────────────────────────
-    protected override void Init()
+
+    [SerializeField] private bool isAliveDebug;
+    [SerializeField] private int currentHPDebug;
+
+    protected override void Awake()
     {
         SetMaxHP(enemyAIData.maxHP);
         SetShield(enemyAIData.maxShield);
-    }
-
-
-    void Start()
-    {
         BuildActorData();
         BuildStates();
         BuildStateMachine();
         _originalColor = ActorData.SpriteRenderer.color;
-        _deadState.OnDeathSequenceComplete += HandleDeathComplete;
     }
-
-    private void OnDisable()
+    protected override void Start()
     {
-        _deadState.OnDeathSequenceComplete -= HandleDeathComplete;
+        // Player 定位走 IPlayerLocator，解耦 FindGameObjectWithTag
+        ActorData.PlayerTransform = PlayerLocator.Instance.PlayerTransform;
     }
 
     // ── Build ────────────────────────────────────────────
@@ -65,9 +63,6 @@ public class EnemyBrain : BaseBrain, IDamageable
             GetComponent<SpriteRenderer>(),
             enemyAIData
         );
-
-        // Player 定位走 IPlayerLocator，解耦 FindGameObjectWithTag
-        ActorData.PlayerTransform = PlayerLocator.Instance.PlayerTransform;
     }
 
     /// <summary>子類別可 override 新增額外 State</summary>
@@ -92,6 +87,10 @@ public class EnemyBrain : BaseBrain, IDamageable
     {
         _stateMachine.Update(Time.deltaTime);
         HandleTransitions();
+
+        isAliveDebug = IsAlive;
+        currentHPDebug = CurrentHP;
+
     }
 
     private void FixedUpdate()
@@ -116,6 +115,12 @@ public class EnemyBrain : BaseBrain, IDamageable
 
         if (current == _hurtState && _hurtState.IsFinished)
         {
+
+            if (_stateMachine.PreviousState == _attackState || _stateMachine.PreviousState == null)
+            {
+                _stateMachine.ChangeState(_chaseState);
+                return;
+            }
             _stateMachine.RevertToPreviousState();
             return;
         }
@@ -159,18 +164,22 @@ public class EnemyBrain : BaseBrain, IDamageable
     public void TakeDamage(DamageInfo info)
     {
         if (!IsAlive) return;
-
-        // 狀態機先切 Hurt
-        _stateMachine.ChangeState(_hurtState);
-
-        // 物理 & 視覺
         ActorData.Rigidbody.velocity = Vector2.zero;
-
-        // HP 計算統一走 BaseBrain.ApplyDamage
         ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
-
         if (_flashRoutine != null) StopCoroutine(_flashRoutine);
         _flashRoutine = StartCoroutine(HitFlash());
+
+        if (!IsAlive)
+        {
+            _stateMachine.ChangeState(_deadState); // 直接切 Dead，不過 Hurt
+            return;
+        }
+
+        bool isAttacking = _attackState != null && _stateMachine.CurrentState == _attackState;
+        if (isAttacking && !_attackState.CurrentPatternCanBeInterrupted) return;
+        if (isAttacking && _attackState.CurrentPatternCanBeInterrupted) _attackState.ForceExit();
+        _stateMachine.ChangeState(_hurtState);
+
     }
 
     protected override void OnApplyKnockback(Vector2 dir, float force)
@@ -180,9 +189,16 @@ public class EnemyBrain : BaseBrain, IDamageable
 
     protected override void HandleDeath()
     {
-        base.HandleDeath();
-        ActorData.IsAlive = false; // 同步給 ActorData（States 用這個判斷）
+        _stateMachine.ChangeState(_deadState);
+
+        // 跨系統廣播
+        EventBus.Publish(new EnemyDiedEvent
+        {
+            WorldPosition = transform.position,
+            EnemyId = enemyAIData.characterId
+        });
     }
+
 
     private IEnumerator HitFlash()
     {
@@ -192,12 +208,12 @@ public class EnemyBrain : BaseBrain, IDamageable
     }
 
     // ── Death ────────────────────────────────────────────
-    public void OnDeathAnimationEnd() => _deadState.OnDeathAnimationEnd();
-
-    private void HandleDeathComplete()
+    // public void OnDeathAnimationEnd() => _deadState.OnDeathAnimationEnd();
+    public void OnDeathAnimationEnd()
     {
         // TODO: 接 Event Bus → MutationManager / LootSystem
         // GameEventBus.Emit(new EnemyDiedEvent(transform.position, enemyAIData.enemyId));
-        Destroy(gameObject, 0.1f);
+        Destroy(gameObject, 5f);
     }
+
 }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orbitRadiusX: 10
   orbitRadiusY: 3
-  orbitHeightOffset: 8
+  orbitHeightOffset: 6
   orbitSpeed: 90
   orbitFollowSpeed: 5
   orbitRadiusLerpSpeed: 2

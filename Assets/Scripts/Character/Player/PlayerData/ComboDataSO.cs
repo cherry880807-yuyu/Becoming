@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[CreateAssetMenu(menuName = "Combat/ComboDataSO")]
+[CreateAssetMenu(menuName = "Weapon/ComboDataSO")]
 public class ComboDataSO : ScriptableObject
 {
     [Header("Combo")]
