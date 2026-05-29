@@ -17,9 +17,9 @@ public class Weapon : MonoBehaviour
         hitbox = GetComponent<Collider2D>();
     }
 
-    public void SetStep(ComboStep step)
+    public void SetStep(int comboStepIndex)
     {
-        currentStep = step;
+        currentStep = comboData.steps[comboStepIndex];
     }
 
     public void DoHitCheck(int damage)
@@ -43,36 +43,19 @@ public class Weapon : MonoBehaviour
                 DamageInfo info = new DamageInfo(damage, hitDir, currentStep.knockbackForce, currentStep.hitStopTime);
                 dmg.TakeDamage(info);
 
-                if (hit.GetComponent<EnemyBrain>().ActorData.IsAlive)
+                EnemyBrain enemyBrain = hit.GetComponent<EnemyBrain>();
+
+                if (enemyBrain != null & enemyBrain.ActorData.IsAlive)
                 {
-                    HitStop(currentStep.hitStopTime);
-                    EventBus.Publish<AttackThreeTimesEvent>(new AttackThreeTimesEvent());
+                    EventBus.Publish(new AttackEnemyEvent { hitTime = currentStep.hitStopTime });
                 }
                 else
                 {
                     Debug.Log("鞭打屍體!");
                 }
-
-
-
-
             }
         }
 
-    }
-
-    void HitStop(float duration, float timeScale = 0f)
-    {
-        StartCoroutine(Stop(duration, timeScale));
-    }
-
-    IEnumerator Stop(float duration, float timeScale)
-    {
-        Time.timeScale = timeScale;
-        Debug.Log("僵直");
-        yield return new WaitForSecondsRealtime(duration);
-        Time.timeScale = 1f;
-        Debug.Log("僵直結束");
     }
 
 

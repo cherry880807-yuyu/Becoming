@@ -16,7 +16,6 @@ public class UIHealthBar : MonoBehaviour
     void Awake()
     {
         hpBar = GetComponent<Image>();
-
     }
     void OnEnable()
     {

@@ -20,6 +20,7 @@ public class PlayerMovement_TypeA : IMovementCore, ISprintable
         rb.velocity = new Vector2(input.x * speed, rb.velocity.y);
     }
 
+
     public void SetSprint(bool sprint)
     {
         isSprinting = sprint;

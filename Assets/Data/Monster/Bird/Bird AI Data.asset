@@ -15,7 +15,7 @@ MonoBehaviour:
   characterId: 1
   Name: "\u91CE\u9CE5"
   prefab: {fileID: 0}
-  maxHP: 500
+  maxHP: 50
   maxShield: 0
   patrolSpeed: 5
   patrolWaitTime: 1.5

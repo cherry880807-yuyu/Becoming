@@ -8,7 +8,5 @@ using UnityEngine;
 public class MutationContext
 {
     public int test_TotalAttackCount;
-    public int totalKills;
-    public int lowHpDuration;
-    public int fireDamageCount;
+    public int dodgeSucceedCount;
 }

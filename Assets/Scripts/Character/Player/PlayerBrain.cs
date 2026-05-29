@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,9 +14,10 @@ public class PlayerBrain : BaseBrain, IDamageable
     [Header("Weapon")]
     [SerializeField] private Weapon wp;
 
-    public PlayerActorData PlayerActorData { get; private set; }
 
+    public PlayerActorData PlayerActorData { get; private set; }
     private PlayerInputHandler _input;
+
 
     // ── IsGrounded 快取（每幀只算一次）─────────────────────
     private bool _isGrounded;
@@ -23,7 +25,7 @@ public class PlayerBrain : BaseBrain, IDamageable
 
     // ────────────────────────────────────────────────────
 
-    
+
     protected override void Awake()
     {
         _input = GetComponent<PlayerInputHandler>();
@@ -62,7 +64,7 @@ public class PlayerBrain : BaseBrain, IDamageable
 
         PlayerActorData.MovementSystem = new MovementSystem(new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
         PlayerActorData.DashSystem = new DashSystem(new PlayerDash_TypeA(dashData), this);
-        PlayerActorData.AttackSystem = new AttackSystem(new PlayerBasicAttackBehavior(wp.ComboDataSO), PlayerActorData);
+        PlayerActorData.AttackSystem = new AttackSystem(PlayerActorData, wp.ComboDataSO);
         PlayerActorData.AnimationSystem = new AnimationSystem(PlayerActorData.Animator);
         PlayerActorData.StaminaSystem = new StaminaSystem(staminaData);
     }
@@ -74,12 +76,15 @@ public class PlayerBrain : BaseBrain, IDamageable
         _isGrounded = GetGroundedCached();
 
         PlayerActorData.StaminaSystem.Regen(Time.deltaTime);
+        PlayerActorData.AttackSystem.EvaluateCombo();
         HandleFacing();
         UpdateAnimationState();
     }
 
     private void FixedUpdate()
     {
+        PlayerActorData.MovementSystem.SetSprint(_input.IsSprinting);
+
         PlayerActorData.MovementSystem.Move(PlayerActorData.Rigidbody, _input.MoveInput);
         HandleAirPhysics();
     }
@@ -92,7 +97,7 @@ public class PlayerBrain : BaseBrain, IDamageable
         PlayerActorData.DashSystem.Execute(PlayerActorData.Rigidbody, _input.LastMoveDir);
     }
 
-    private void HandleAttack() => PlayerActorData.AttackSystem.Attack();
+    private void HandleAttack() => PlayerActorData.AttackSystem.OnAttackInput();
 
     private void HandleJump()
     {
@@ -105,7 +110,14 @@ public class PlayerBrain : BaseBrain, IDamageable
     // ── IDamageable ───────────────────────────────────────
     public void TakeDamage(DamageInfo info)
     {
+        if (PlayerActorData.DashSystem.IsDashing)
+        {
+            Debug.Log("閃避成功");
+            EventBus.Publish(new DodgeSucceededEvent());
+            return;
+        }
         if (IsAlive) PlayerActorData.AnimationSystem.PlayHit();
+
         ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
     }
 
@@ -121,7 +133,7 @@ public class PlayerBrain : BaseBrain, IDamageable
 
     public void Attack()
     {
-        wp.SetStep(PlayerActorData.AttackSystem.CurrentStep);
+        wp.SetStep(PlayerActorData.AttackSystem.currentComboStepIndex);
         wp.DoHitCheck(PlayerActorData.AttackSystem.FinalDamage);
     }
 
@@ -149,7 +161,7 @@ public class PlayerBrain : BaseBrain, IDamageable
         PlayerActorData.Facing = _input.MoveInput.normalized;
         // 避免每幀 new Vector3：只在方向改變時設
         float scaleX = PlayerActorData.Facing.x < 0 ? -1f : 1f;
-        if (!Mathf.Approximately(transform.localScale.x, scaleX)) transform.localScale = new Vector3(scaleX, 1f, 1f);
+        if (!Mathf.Approximately(transform.GetChild(0).localScale.x, scaleX)) transform.GetChild(0).localScale = new Vector3(scaleX, 1f, 1f);
     }
 
     private void UpdateAnimationState()

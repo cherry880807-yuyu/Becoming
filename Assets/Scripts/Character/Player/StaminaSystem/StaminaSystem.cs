@@ -29,10 +29,12 @@ public class StaminaSystem
     // =========================
     // ACTION
     // =========================
-    public void Consume(float cost)
+    public bool Consume(float cost)
     {
+        if (current < cost) return false;
+
         current -= cost;
-        current = Mathf.Max(0, current);
+        return true;
     }
 
     public void Regen(float deltaTime)

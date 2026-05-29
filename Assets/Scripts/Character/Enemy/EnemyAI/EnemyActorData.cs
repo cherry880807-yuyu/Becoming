@@ -38,7 +38,7 @@ public class EnemyActorData
         Collider = collider;
         SpriteRenderer = spriteRenderer;
         EnemyAIDataSO = enemyAIData;
-        
+
         root = Transform.GetChild(0);
         AnimationSystem = new EnemyAnimationSystem(animator);
     }

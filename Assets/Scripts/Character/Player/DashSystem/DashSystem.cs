@@ -8,6 +8,7 @@ public class DashSystem
     private MonoBehaviour owner;
     public bool IsDashing { get; private set; }
 
+
     public DashSystem(IDash dash, MonoBehaviour owner)
     {
         this.dash = dash;

@@ -5,7 +5,7 @@ using UnityEngine;
 public class AnimationSystem
 {
     private Animator animator;
-
+    private static readonly int _attackLayerIndex = 1;
     public AnimationSystem(Animator animator)
     {
         this.animator = animator;
@@ -13,7 +13,7 @@ public class AnimationSystem
 
     public void SetMovementState(MovementState state)
     {
-        animator.SetFloat("Speed", state.velocity.magnitude);
+        animator.SetFloat("Speed", Mathf.Abs(state.velocity.x));
         animator.SetBool("Sprint", state.isSprinting);
         animator.SetBool("Grounded", state.isGrounded);
         animator.SetBool("Dashing", state.isDashing);
@@ -30,6 +30,19 @@ public class AnimationSystem
     public void PlayDeath()
     {
 
+    }
+
+
+    public float GetAttackNormalizedTime()
+    {
+        var info = animator.GetCurrentAnimatorStateInfo(_attackLayerIndex);
+        if (!info.IsTag("Attack")) return -1f;
+        return info.normalizedTime;
+    }
+
+    public bool IsInAttackState()
+    {
+        return animator.GetCurrentAnimatorStateInfo(_attackLayerIndex).IsTag("Attack");
     }
 
 }

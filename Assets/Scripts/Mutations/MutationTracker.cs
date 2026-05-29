@@ -11,17 +11,25 @@ public class MutationTracker : MonoBehaviour
 
     private void OnEnable()
     {
-        EventBus.Subscribe<AttackThreeTimesEvent>(OnEnemyAttacked);
+        EventBus.Subscribe<AttackEnemyEvent>(OnEnemyAttacked);
+        EventBus.Subscribe<DodgeSucceededEvent>(OnPlayerDodgeSucceed);
     }
 
     private void OnDisable()
     {
-        EventBus.Unsubscribe<AttackThreeTimesEvent>(OnEnemyAttacked);
+        EventBus.Unsubscribe<AttackEnemyEvent>(OnEnemyAttacked);
+        EventBus.Unsubscribe<DodgeSucceededEvent>(OnPlayerDodgeSucceed);
     }
 
-    private void OnEnemyAttacked(AttackThreeTimesEvent e)
+    private void OnEnemyAttacked(AttackEnemyEvent e)
     {
         Context.test_TotalAttackCount++;
+        MutationManager.Instance.EvaluateMutations(Context);
+    }
+
+    private void OnPlayerDodgeSucceed(DodgeSucceededEvent e)
+    {
+        Context.dodgeSucceedCount++;
         MutationManager.Instance.EvaluateMutations(Context);
     }
 
