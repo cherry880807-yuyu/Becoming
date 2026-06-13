@@ -20,12 +20,14 @@ public class FloatingTextPool : Singleton<FloatingTextPool>
     {
         EventBus.Subscribe<DamageDealtEvent>(OnDamage);
         EventBus.Subscribe<HealEvent>(OnHeal);
+        EventBus.Subscribe<DodgeSucceededEvent>(OnDodgeSucceeded);
     }
 
     void OnDisable()
     {
         EventBus.Unsubscribe<DamageDealtEvent>(OnDamage);
         EventBus.Unsubscribe<HealEvent>(OnHeal);
+        EventBus.Unsubscribe<DodgeSucceededEvent>(OnDodgeSucceeded);
     }
 
     private void OnDamage(DamageDealtEvent e)
@@ -46,6 +48,17 @@ public class FloatingTextPool : Singleton<FloatingTextPool>
             WorldPosition = e.WorldPosition,
         });
     }
+
+    private void OnDodgeSucceeded(DodgeSucceededEvent e)
+    {
+        Spawn(new FloatingTextData
+        {
+            text = e.text.ToString(),
+            Type = FloatingTextType.System,
+            WorldPosition = e.WorldPosition,
+        });
+    }
+
 
     private void Spawn(FloatingTextData data)
     {

@@ -8,4 +8,5 @@ public class MovementDataSO : ScriptableObject
     public float jumpForce = 12f;
     public float gravity = -30f;
     public float fallMultiplier = 2.5f;
+    public float downPlatformForce=10f;
 }

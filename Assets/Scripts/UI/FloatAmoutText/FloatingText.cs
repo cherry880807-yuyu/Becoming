@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-public enum FloatingTextType { Noraml, Damage, Heal }
+public enum FloatingTextType { Noraml, Damage, Heal, System }
 
 public struct FloatingTextData
 {
@@ -15,7 +15,7 @@ public struct FloatingTextData
 [RequireComponent(typeof(TextMeshPro))]
 public class FloatingText : MonoBehaviour
 {
-     private TextMeshPro _tmp;
+    private TextMeshPro _tmp;
 
     // 設定從外部注入，不寫死
     private FloatingTextConfig _config;
@@ -24,7 +24,7 @@ public class FloatingText : MonoBehaviour
     public void Init(FloatingTextConfig config)
     {
         _config = config;
-        _tmp=GetComponent<TextMeshPro>();
+        _tmp = GetComponent<TextMeshPro>();
     }
 
     /// <summary>Pool 取出時呼叫，設定內容並開始動畫</summary>
@@ -47,6 +47,10 @@ public class FloatingText : MonoBehaviour
             case FloatingTextType.Heal:
                 _tmp.text = $"+{data.text}";
                 _tmp.color = _config.healColor;
+                break;
+            case FloatingTextType.System:
+                _tmp.text = data.text;
+                _tmp.color = _config.systemColor;
                 break;
         }
 

@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.U2D.Animation;
+
 using UnityEngine;
 [CreateAssetMenu(menuName = "Enemy/Enemy AI Data")]
 public class EnemyAIDataSO : CharacterDataSO

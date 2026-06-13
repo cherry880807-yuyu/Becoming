@@ -1,90 +1,138 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+
 
 public class AttackSystem
 {
 
-    private PlayerActorData actorData;
-    private readonly ComboDataSO comboData;
+    private PlayerActorData _actorData;
+    private WeaponDataSO _currentWeapon;// 可切換
+    private ComboType _currentComboType;
+    private ComboStep[] _currentSteps;
+
     private readonly ComboInputBuffer _buffer;
 
-    private readonly float _comboWindowStart = 0.6f;
+    private readonly float _comboWindowStart = 0.3f;
+    private readonly float _comboWindowEnd = 0.75f;
 
-    public int currentComboStepIndex { get; private set; }
-    private bool _isAttacking;
-    private bool _comboChecked;
+    private int currentComboStepIndex = 0;
+    public bool IsAttacking { get; private set; }
+    private bool _attackStarted;
+    private bool _canQueueNext;
+    private float _comboEndTime;
 
+    public ComboStep CurrentStep { get; private set; }
 
-    public int BaseDamage => comboData.steps[currentComboStepIndex].damage;
+    public int BaseDamage { get; private set; }
     public int FinalDamage => BaseDamage + bonusDamage;
     private int bonusDamage;
 
-    public AttackSystem(PlayerActorData actorData, ComboDataSO comboData)
+
+    public AttackSystem(PlayerActorData actorData, WeaponDataSO defaultWeapon)
     {
-        this.actorData = actorData;
-        this.comboData = comboData;
+        _actorData = actorData;
+        _currentWeapon = defaultWeapon;
         _buffer = new ComboInputBuffer();
+        EventBus.Subscribe<ResetAttackComboEvent>(OnComboReset);
+    }
+    public void Dispose()
+    {
+        EventBus.Unsubscribe<ResetAttackComboEvent>(OnComboReset);
     }
     public void OnAttackInput()
     {
-        if (!_isAttacking)
+
+        if (!IsAttacking)
         {
-            StartCombo(actorData);
+            ComboType newType = ResolveComboType();
+            if (newType != _currentComboType)
+            {
+                EndCombo(true);
+                _currentComboType = newType;
+            }
+            _currentSteps = _currentWeapon.GetSteps(newType);
+            Debug.Log(ResolveComboType());
+            StartCombo(_actorData);
+            return;
         }
-        else
-        {
-            _buffer.Enqueue();
-        }
+        if (_canQueueNext) _buffer.Enqueue();
     }
+    // 武器切換（換武器時呼叫）
+    public void SetWeapon(WeaponDataSO weapon)
+    {
+        _currentWeapon = weapon;
+        EndCombo(true);
+    }
+    //------------------------------------------
+
     public void EvaluateCombo()
     {
-        if (!_isAttacking) return;
-
-        float normalizedTime = actorData.AnimationSystem.GetAttackNormalizedTime();
-
-        // 離開攻擊狀態（動畫播完）
-        if (normalizedTime < 0f)
+        if (!IsAttacking)
         {
-            EndCombo();
+            if (_comboEndTime > 0f && Time.time - _comboEndTime > _currentWeapon.resetTime)
+                EndCombo(true);
             return;
         }
 
-        // 進入 Combo Window，檢查一次
-        if (!_comboChecked && normalizedTime >= _comboWindowStart)
+        float normalizedTime = _actorData.AnimationSystem.GetAttackNormalizedTime();
+
+        if (normalizedTime >= 0) _attackStarted = true;
+
+        if (_attackStarted && normalizedTime < 0f)
         {
-            _comboChecked = true;
-
-            if (_buffer.Dequeue() && currentComboStepIndex < comboData.steps.Length)
+            IsAttacking = false;
+            _comboEndTime = Time.time;
+            if (_buffer.Dequeue())
             {
-                PlayStep(actorData);
+                IsAttacking = true;
+                PlayStep(_actorData);
+                return;
             }
+            _buffer.Clear();
+            return;
         }
+        _canQueueNext = normalizedTime >= _comboWindowStart && normalizedTime <= _comboWindowEnd;
     }
 
-    private void StartCombo(PlayerActorData actorData)
+    //------------------------------
+    private ComboType ResolveComboType()
     {
-        _isAttacking = true;
-        currentComboStepIndex = 0;
-        PlayStep(actorData);
+        if (_actorData.MovementSystem.IsSprint) return ComboType.Dash;
+        if (!_actorData.MovementSystem.IsGrounded) return ComboType.Air;
+        return ComboType.Ground;
     }
 
-    private void PlayStep(PlayerActorData actorData)
+    private void StartCombo(PlayerActorData _actorData)
     {
-        _comboChecked = false;
-        actorData.AnimationSystem.PlayAttack(currentComboStepIndex);
+        IsAttacking = true;
+        PlayStep(_actorData);
+    }
+
+    private void PlayStep(PlayerActorData _actorData)
+    {
+        _attackStarted = false;
+        CurrentStep = _currentSteps[currentComboStepIndex];
+        BaseDamage = CurrentStep.damage;
+        Debug.Log($"Play Attack Step : {currentComboStepIndex},Combo Type:{ResolveComboType()}");
+        _actorData.AnimationSystem.PlayAttack(currentComboStepIndex, ResolveComboType());
         currentComboStepIndex++;
+        if (currentComboStepIndex >= _currentSteps.Length) currentComboStepIndex = 0;
     }
 
-    private void EndCombo()
+    private void EndCombo(bool resetStep = false)
     {
-        _isAttacking = false;
-        currentComboStepIndex = 0;
-        _comboChecked = false;
+        IsAttacking = false;
+        _attackStarted = false;
         _buffer.Clear();
+        _comboEndTime = 0f;
+        if (resetStep) currentComboStepIndex = 0;
     }
-
-
+    private void OnComboReset(ResetAttackComboEvent _)
+    {
+        EndCombo(true);
+    }
 
     public void AddBonusDamage(int amount)
     {

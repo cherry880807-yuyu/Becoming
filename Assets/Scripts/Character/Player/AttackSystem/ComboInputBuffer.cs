@@ -7,8 +7,7 @@ public class ComboInputBuffer
     private bool _hasNext;
     private float _expireTime;
     private float _bufferDuration;
-
-    public ComboInputBuffer(float bufferDuration = 0.2f)
+    public ComboInputBuffer(float bufferDuration = 0.4f)
     {
         _bufferDuration = bufferDuration;
     }
@@ -24,20 +23,18 @@ public class ComboInputBuffer
     {
         if (!_hasNext)
         {
-            Debug.Log("No Buffered Input");
+            //Debug.Log("No Buffered Input");
             return false;
         }
 
         if (Time.time > _expireTime)
         {
-            Debug.Log("Buffered Input Expired");
-
+            //Debug.Log("Buffered Input Expired");
             _hasNext = false;
             return false;
         }
-
-        Debug.Log("Buffered Input Consumed");
-
+        
+        //Debug.Log("Buffered Input Consumed");
         _hasNext = false;
         return true;
     }

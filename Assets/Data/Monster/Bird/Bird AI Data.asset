@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterId: 1
   Name: "\u91CE\u9CE5"
-  prefab: {fileID: 0}
+  prefab: {fileID: 8298682852495538416, guid: 2a9de0961535ceb45aefe2d19f2d6285, type: 3}
   maxHP: 50
   maxShield: 0
   patrolSpeed: 5

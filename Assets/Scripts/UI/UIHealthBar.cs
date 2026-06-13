@@ -8,7 +8,7 @@ public class UIHealthBar : MonoBehaviour
     [SerializeField] BaseBrain target;
     private Image hpBar;
 
-    private float displayHP;
+    private float displayHP=1;
     private float targetHP;
 
     float smoothSpeed = 1f;
@@ -28,7 +28,7 @@ public class UIHealthBar : MonoBehaviour
 
     void Start()
     {
-        UpdateBar(target.CurrentHP);
+        UpdateBar(target.MaxHP);
     }
     void Update()
     {

@@ -16,4 +16,5 @@ MonoBehaviour:
   sprintSpeed: 10
   jumpForce: 18
   gravity: -9.8
-  fallMultiplier: 2.5
+  fallMultiplier: 5
+  downPlatformForce: 15

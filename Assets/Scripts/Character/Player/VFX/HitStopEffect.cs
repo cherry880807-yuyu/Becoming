@@ -25,9 +25,7 @@ public class HitStopEffect : MonoBehaviour
     IEnumerator HitStop(float duration)
     {
         Time.timeScale = 0f;
-        Debug.Log("僵直");
         yield return new WaitForSecondsRealtime(duration);
         Time.timeScale = 1f;
-        Debug.Log("僵直結束");
     }
 }

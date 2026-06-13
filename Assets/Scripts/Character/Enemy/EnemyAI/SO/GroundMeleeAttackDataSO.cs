@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Enemy/AttackData/GroundMelee AttackData")]
-public class GroundMeleeAttackDataSO : ScriptableObject
+public class GroundMeleeAttackDataSO : AttackDataSO
 {
     [Header("Range")]
     public float attackRange   = 1.5f;

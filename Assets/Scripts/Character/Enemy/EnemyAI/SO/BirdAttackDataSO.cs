@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 [CreateAssetMenu(menuName = "Enemy/AttackData/BirdDive AttackData")]
-public class BirdAttackDataSO : ScriptableObject
+public class BirdAttackDataSO : AttackDataSO
 {
     [Header("盤旋行為")]
     public float orbitRadiusX = 10f;   // 橢圓水平半徑，越大繞越寬
@@ -27,12 +27,14 @@ public class BirdAttackDataSO : ScriptableObject
     [Header("俯衝速度")]
     public float diveSpeed = 15f;//俯衝速度 / Aim 飄移速度
 
-    [Header("俯衝傷害")]
+
+
+}
+public class AttackDataSO : ScriptableObject
+{
+    [Header("傷害")]
     public int diveDamage = 20;
 
-    [Header("俯衝冷卻")]
+    [Header("冷卻")]
     public float diveCooldown = 5f; //從 Exit 起算，幾秒後才能再俯衝
-
-
-
 }

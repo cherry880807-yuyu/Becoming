@@ -5,10 +5,12 @@ using UnityEngine;
 /// 所有 Brain（Player/Enemy）的基底
 /// 單一狀態來源：HP 只在這裡管
 /// </summary>
-[RequireComponent(typeof(Rigidbody2D), typeof(Animator))]
-[RequireComponent(typeof(Collider2D), typeof(SpriteRenderer))]
 public abstract class BaseBrain : MonoBehaviour
 {
+    [Header("Hitbox")]
+    [SerializeField] protected HitBox2D _Hitbox;
+    [Header("Hurtbox")]
+    [SerializeField] protected HurtBox2D _Hurtbox;
     // ── 對外唯讀，避免外部亂改 ──────────────────────────
     public int CurrentHP { get; private set; }
     public int MaxHP { get; private set; }
@@ -25,10 +27,22 @@ public abstract class BaseBrain : MonoBehaviour
     private static readonly WaitForSeconds _hitFlashWait = new WaitForSeconds(0.1f);
 
     // ────────────────────────────────────────────────────
-    protected virtual void Awake() { }
+    protected virtual void Awake()
+    {
+
+        _Hitbox = GetComponentInChildren<HitBox2D>();
+        _Hurtbox = GetComponentInChildren<HurtBox2D>();
+    }
     protected virtual void Start() { }
-    protected virtual void OnEnable() { }
-    protected virtual void OnDisable() { }
+    protected virtual void OnEnable()
+    {
+        _Hitbox.onHit += OnHit;
+    }
+    protected virtual void OnDisable()
+    {
+        _Hitbox.onHit -= OnHit;
+    }
+
 
     // ────────────────────────────────
     protected void SetMaxHP(int max)
@@ -37,7 +51,13 @@ public abstract class BaseBrain : MonoBehaviour
         CurrentHP = max;
     }
 
-    protected void SetShield(int shield) => CurrentShield = shield;
+    protected void SetShield(int shield)
+    {
+        CurrentShield = shield;
+    }
+
+    public void OnHitboxOpen() => _Hitbox.Activate();
+    public void OnHitboxClose() => _Hitbox.Deactivate();
 
     public void ApplyDamage(int rawDamage, Vector2 knockbackDir, float knockbackForce)
     {
@@ -62,10 +82,6 @@ public abstract class BaseBrain : MonoBehaviour
             WorldPosition = GetDamageTextPosition()
         });
 
-
-
-
-
         if (!IsAlive) HandleDeath();
     }
 
@@ -81,25 +97,19 @@ public abstract class BaseBrain : MonoBehaviour
         });
 
     }
+    // ────────────────────────────────
+    protected virtual void OnHit(IDamageable damageable, Vector2 knockDir)
+    {
 
-    protected virtual void OnApplyKnockback(Vector2 dir, float force) { }
+    }
+    protected abstract void OnApplyKnockback(Vector2 dir, float force);
 
     protected virtual void HandleDeath()
     {
 
     }
+    //--------------------------------------
     protected virtual Vector3 GetDamageTextPosition() => transform.position + Vector3.up * 1f;
 
-    protected bool CheckGrounded(Collider2D col)
-    {
-        Bounds b = col.bounds;
-        return Physics2D.BoxCast(
-            b.center,
-            new Vector2(b.size.x * 0.9f, b.size.y),
-            0f,
-            Vector2.down,
-            0.1f,
-            LayerMask.GetMask("Ground")
-        ).collider != null;
-    }
+
 }

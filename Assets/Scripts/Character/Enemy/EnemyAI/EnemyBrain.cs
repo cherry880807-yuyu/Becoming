@@ -10,7 +10,9 @@ public class EnemyBrain : BaseBrain, IDamageable
 {
     [Header("Basic Enemy AI Data")]
     [SerializeField] protected EnemyAIDataSO enemyAIData;
+    [SerializeField] private bool canPatrol = true;
     [SerializeField] private Transform[] _patrolPoints;
+
 
     // ── StateMachine ────────────────────────────────────
     protected StateMachine _stateMachine;
@@ -33,8 +35,6 @@ public class EnemyBrain : BaseBrain, IDamageable
 
     // ────────────────────────────────────────────────────
 
-    [SerializeField] private bool isAliveDebug;
-    [SerializeField] private int currentHPDebug;
 
     protected override void Awake()
     {
@@ -79,7 +79,8 @@ public class EnemyBrain : BaseBrain, IDamageable
     protected virtual void BuildStateMachine()
     {
         _stateMachine = new StateMachine();
-        _stateMachine.Initialize(_idleState);
+        if (canPatrol) _stateMachine.Initialize(_patrolState);
+        else _stateMachine.Initialize(_idleState);
     }
 
     // ── Unity Loop ───────────────────────────────────────
@@ -87,10 +88,6 @@ public class EnemyBrain : BaseBrain, IDamageable
     {
         _stateMachine.Update(Time.deltaTime);
         HandleTransitions();
-
-        isAliveDebug = IsAlive;
-        currentHPDebug = CurrentHP;
-
     }
 
     private void FixedUpdate()
@@ -151,7 +148,8 @@ public class EnemyBrain : BaseBrain, IDamageable
 
         if (current == _chaseState && !ActorData.CanDetectPlayer() && ActorData.DistanceToPlayer() > enemyAIData.loseTargetRange)
         {
-            _stateMachine.ChangeState(_patrolState);
+            if (canPatrol) _stateMachine.ChangeState(_patrolState);
+            else _stateMachine.ChangeState(_idleState);
             return;
         }
 
@@ -164,7 +162,6 @@ public class EnemyBrain : BaseBrain, IDamageable
     public void TakeDamage(DamageInfo info)
     {
         if (!IsAlive) return;
-        ActorData.Rigidbody.velocity = Vector2.zero;
         ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
         if (_flashRoutine != null) StopCoroutine(_flashRoutine);
         _flashRoutine = StartCoroutine(HitFlash());
@@ -184,7 +181,7 @@ public class EnemyBrain : BaseBrain, IDamageable
 
     protected override void OnApplyKnockback(Vector2 dir, float force)
     {
-        ActorData.Rigidbody.AddForce(dir * force, ForceMode2D.Impulse);
+        _hurtState.SetKnockback(dir,force);
     }
 
     protected override void HandleDeath()

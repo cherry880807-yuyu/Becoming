@@ -12,7 +12,7 @@ public class StateMachine
     {
         CurrentState = initialState;
         initialState.Enter();
-        Debug.Log("初始化狀態-Idle");
+        Debug.Log("初始化狀態:"+initialState);
     }
 
     public void ChangeState(IState newState)

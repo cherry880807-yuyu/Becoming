@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using UnityEditor.Localization.Plugins.XLIFF.V20;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,16 +13,16 @@ public class PlayerBrain : BaseBrain, IDamageable
     [SerializeField] private DashDataSO dashData;
     [SerializeField] private StaminaDataSO staminaData;
 
-    [Header("Weapon")]
-    [SerializeField] private Weapon wp;
+    [Header("WeaponData")]
+    [SerializeField] private WeaponDataSO weapon;
 
-
+    // ────────────────────────────────────────────────────
     public PlayerActorData PlayerActorData { get; private set; }
     private PlayerInputHandler _input;
 
-
     // ── IsGrounded 快取（每幀只算一次）─────────────────────
     private bool _isGrounded;
+    private bool _isDropping;
     private int _lastGroundedFrame = -1;
 
     // ────────────────────────────────────────────────────
@@ -32,23 +34,29 @@ public class PlayerBrain : BaseBrain, IDamageable
         SetMaxHP(characterData.maxHP);
         SetShield(characterData.maxShield);
         BuildActorData();
+    }
+    protected override void Start()
+    {
         PlayerLocator.Instance.Register(transform);
     }
 
-
     protected override void OnEnable()
     {
-
+        base.OnEnable();
         _input.OnDashPressed += HandleDash;
         _input.OnAttackPressed += HandleAttack;
         _input.OnJumpPressed += HandleJump;
+        _input.OnDownPressed += HandleDown;
     }
 
     protected override void OnDisable()
     {
+        base.OnDisable();
         _input.OnDashPressed -= HandleDash;
         _input.OnAttackPressed -= HandleAttack;
         _input.OnJumpPressed -= HandleJump;
+        _input.OnDownPressed -= HandleDown;
+        PlayerActorData?.AttackSystem?.Dispose();
     }
 
     // ── Build ─────────────────────────────────────────────
@@ -58,15 +66,15 @@ public class PlayerBrain : BaseBrain, IDamageable
         (
             GetComponent<Rigidbody2D>(),
             GetComponent<Animator>(),
-            GetComponent<Collider2D>(),
-            GetComponent<SpriteRenderer>()
+            transform.GetChild(0).GetComponent<Collider2D>()
         );
-
-        PlayerActorData.MovementSystem = new MovementSystem(new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
+        PlayerActorData.MovementSystem = new MovementSystem(PlayerActorData, new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
         PlayerActorData.DashSystem = new DashSystem(new PlayerDash_TypeA(dashData), this);
-        PlayerActorData.AttackSystem = new AttackSystem(PlayerActorData, wp.ComboDataSO);
+        PlayerActorData.AttackSystem = new AttackSystem(PlayerActorData, weapon);
         PlayerActorData.AnimationSystem = new AnimationSystem(PlayerActorData.Animator);
         PlayerActorData.StaminaSystem = new StaminaSystem(staminaData);
+
+        _Hurtbox.Register(PlayerActorData.DashSystem);
     }
 
     // ── Unity Loop ────────────────────────────────────────
@@ -83,9 +91,10 @@ public class PlayerBrain : BaseBrain, IDamageable
 
     private void FixedUpdate()
     {
+        PlayerActorData.MovementSystem.CheckGrounded_ByBoxCast();
         PlayerActorData.MovementSystem.SetSprint(_input.IsSprinting);
-
         PlayerActorData.MovementSystem.Move(PlayerActorData.Rigidbody, _input.MoveInput);
+
         HandleAirPhysics();
     }
 
@@ -102,22 +111,121 @@ public class PlayerBrain : BaseBrain, IDamageable
     private void HandleJump()
     {
         if (!_isGrounded) return;
-        var rb = PlayerActorData.Rigidbody;
-        rb.velocity = new Vector2(rb.velocity.x, 0f);
-        rb.AddForce(Vector2.up * movementData.jumpForce, ForceMode2D.Impulse);
+        PlayerActorData.Rigidbody.velocity = new Vector2(PlayerActorData.Rigidbody.velocity.x, 0f);
+        PlayerActorData.Rigidbody.AddForce(Vector2.up * movementData.jumpForce, ForceMode2D.Impulse);
+        EventBus.Publish(new ResetAttackComboEvent());
+    }
+    private void HandleDown()
+    {
+        if (!_isGrounded || _isDropping || PlayerActorData.AttackSystem.IsAttacking) return;
+
+        StartCoroutine(DropPlatform_TimerBased());
+    }
+
+    private IEnumerator DropPlatform_PhysicsBased()
+    {
+        if (_isDropping) yield break;
+        _isDropping = true;
+
+        Collider2D currentPlatform = PlayerActorData.MovementSystem.GetCurrentPlatform(PlayerActorData.Collider);
+
+        if (currentPlatform == null)
+        {
+            _isDropping = false;
+            yield break;
+        }
+
+        Physics2D.IgnoreCollision(
+            PlayerActorData.Collider,
+            currentPlatform,
+            true
+        );
+
+        PlayerActorData.Rigidbody.velocity = new Vector2(
+            PlayerActorData.Rigidbody.velocity.x,
+            -movementData.downPlatformForce
+        );
+
+        yield return new WaitUntil(() =>
+            PlayerActorData.Collider.bounds.max.y <
+            currentPlatform.bounds.min.y
+        );
+
+        Physics2D.IgnoreCollision(
+            PlayerActorData.Collider,
+            currentPlatform,
+            false
+        );
+
+        _isDropping = false;
+    }
+
+    private IEnumerator DropPlatform_TimerBased()
+    {
+        _isDropping = true;
+        Collider2D currentPlatform = PlayerActorData.MovementSystem.GetCurrentPlatform(PlayerActorData.Collider);
+
+        if (currentPlatform == null)
+        {
+            _isDropping = false;
+            yield break;
+        }
+
+        Physics2D.IgnoreCollision(
+            PlayerActorData.Collider,
+            currentPlatform,
+            true
+        );
+
+        PlayerActorData.Rigidbody.velocity = new Vector2(
+            PlayerActorData.Rigidbody.velocity.x,
+            -movementData.downPlatformForce
+        );
+
+        yield return new WaitForSecondsRealtime(0.1f);
+
+        Physics2D.IgnoreCollision(
+            PlayerActorData.Collider,
+            currentPlatform,
+            false
+        );
+
+        _isDropping = false;
     }
 
     // ── IDamageable ───────────────────────────────────────
+    protected override void OnHit(IDamageable damageable, Vector2 knockDir)
+    {
+        if (damageable == null) return;
+
+        bool IsEnemyAlive = false;
+        if (damageable is BaseBrain baseBrain) IsEnemyAlive = baseBrain.IsAlive;
+         float angleRad = PlayerActorData.AttackSystem.CurrentStep.KnockbackAngle * Mathf.Deg2Rad;
+
+        damageable.TakeDamage(new DamageInfo
+        {
+            damage = PlayerActorData.AttackSystem.FinalDamage,
+            knockbackForce = PlayerActorData.AttackSystem.CurrentStep.knockbackForce,
+            hitDirection = new Vector2(Mathf.Cos(angleRad) * PlayerActorData.Facing.x,Mathf.Sin(angleRad))
+        });
+
+        if (IsEnemyAlive)
+        {
+            EventBus.Publish(new AttackEnemyEvent
+            {
+                hitTime = PlayerActorData.AttackSystem.CurrentStep.hitStopTime
+            });
+        }
+        else
+        {
+            Debug.Log("鞭打屍體!");
+        }
+    }
+
     public void TakeDamage(DamageInfo info)
     {
-        if (PlayerActorData.DashSystem.IsDashing)
-        {
-            Debug.Log("閃避成功");
-            EventBus.Publish(new DodgeSucceededEvent());
-            return;
-        }
-        if (IsAlive) PlayerActorData.AnimationSystem.PlayHit();
-
+        if (!IsAlive) return;
+        PlayerActorData.AnimationSystem.PlayHit();
         ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
     }
 
@@ -130,12 +238,6 @@ public class PlayerBrain : BaseBrain, IDamageable
     }
 
     public void Heal(int amount) => ApplyHeal(amount);
-
-    public void Attack()
-    {
-        wp.SetStep(PlayerActorData.AttackSystem.currentComboStepIndex);
-        wp.DoHitCheck(PlayerActorData.AttackSystem.FinalDamage);
-    }
 
     // ── Death ─────────────────────────────────────────────
     protected override void HandleDeath()
@@ -151,12 +253,12 @@ public class PlayerBrain : BaseBrain, IDamageable
     {
         if (_lastGroundedFrame == Time.frameCount) return _isGrounded;
         _lastGroundedFrame = Time.frameCount;
-        return CheckGrounded(PlayerActorData.Collider); // BaseBrain 的方法
+        return PlayerActorData.MovementSystem.IsGrounded; // BaseBrain 的方法
     }
 
     private void HandleFacing()
     {
-        if (_input.MoveInput == Vector2.zero) return;
+        if (Mathf.Approximately(_input.MoveInput.x, 0f)) return;
 
         PlayerActorData.Facing = _input.MoveInput.normalized;
         // 避免每幀 new Vector3：只在方向改變時設
@@ -177,8 +279,7 @@ public class PlayerBrain : BaseBrain, IDamageable
 
     private void HandleAirPhysics()
     {
-        // FixedUpdate 裡也用 CheckGrounded，但這是物理幀，跟 Update 分開是正確的
-        if (CheckGrounded(PlayerActorData.Collider)) return;
+        if (PlayerActorData.MovementSystem.IsGrounded) return;
 
         var rb = PlayerActorData.Rigidbody;
         float extraGravity = rb.velocity.y < 0

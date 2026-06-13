@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -8,12 +9,11 @@ public class Monster_Bird_Enemy : EnemyBrain
 {
     [Header("Attack Data")]
     [SerializeField] private BirdAttackDataSO _birdAttackData; // 鳥專屬設定 SO
-    [Header("Hitbox")]
-    [SerializeField] private BirdDiveHitbox _diveHitbox;
+
     protected override void BuildStates()
     {
         base.BuildStates();
-        _diveHitbox.Init(_birdAttackData, ActorData);
+
         List<IEnemyAttackPattern> attackPatterns = new List<IEnemyAttackPattern> { new BirdDiveAttack(_birdAttackData) };
         var circleChase = new BirdCircleChasePattern(_birdAttackData);
 
@@ -22,13 +22,15 @@ public class Monster_Bird_Enemy : EnemyBrain
         _attackState = new EnemyAttackState(ActorData, attackPatterns);
         ActorData.Rigidbody.gravityScale = 0f;
     }
-
-    // ── Animation Events ──────────────────────────────────
-    public void OnDiveHitboxOpen() => _diveHitbox.Activate();
-
-    public void OnDiveHitboxClose() => _diveHitbox.Deactivate();
-
-
+    protected override void OnHit(IDamageable damageable, Vector2 knockDir)
+    {
+        damageable.TakeDamage(new DamageInfo
+        {
+            damage = _birdAttackData.diveDamage,
+            knockbackForce = 0,
+            hitDirection = knockDir
+        });
+    }
 }
 
 

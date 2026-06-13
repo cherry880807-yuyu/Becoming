@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DashSystem
+public class DashSystem : IInvincibleSource
 {
     private IDash dash;
     private MonoBehaviour owner;
@@ -25,7 +25,13 @@ public class DashSystem
     private IEnumerator DashRoutine(Rigidbody2D rb, Vector2 dir)
     {
         IsDashing = true;
+        EventBus.Publish(new ResetAttackComboEvent());
         yield return dash.Dash(rb, dir);
         IsDashing = false;
+    }
+
+    public InvincibleType GetInvincibleType()
+    {
+        return IsDashing ? InvincibleType.Dash : InvincibleType.None;
     }
 }

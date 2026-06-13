@@ -10,7 +10,6 @@ public class PlayerActorData
     public Rigidbody2D Rigidbody;
     public Animator Animator;
     public Collider2D Collider;
-    public SpriteRenderer SpriteRenderer;
 
     //System
     public MovementSystem MovementSystem;
@@ -22,12 +21,11 @@ public class PlayerActorData
     public StaminaSystem StaminaSystem;
 
     
-    public PlayerActorData(Rigidbody2D rigidbody, Animator animator, Collider2D collider, SpriteRenderer spriteRenderer)
+    public PlayerActorData(Rigidbody2D rigidbody, Animator animator, Collider2D collider)
     {
         Rigidbody = rigidbody;
         Animator = animator;
         Collider = collider;
-        SpriteRenderer = spriteRenderer;
     }
 }
 

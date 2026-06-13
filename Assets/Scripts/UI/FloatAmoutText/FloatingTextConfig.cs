@@ -11,4 +11,5 @@ public class FloatingTextConfig : ScriptableObject
     public Color normalColor = Color.white;
     public Color damageColor = new Color(1f, 0.4f, 0f);
     public Color healColor = new Color(0.2f, 1f, 0.4f);
+    public Color systemColor = new Color(1f, 0.85f, 0.2f);
 }

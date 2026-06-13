@@ -13,6 +13,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action OnDashPressed;
     public event Action OnAttackPressed;
     public event Action OnJumpPressed;
+    public event Action OnDownPressed;
 
     private PlayerInputActions _input;
 
@@ -24,6 +25,7 @@ public class PlayerInputHandler : MonoBehaviour
         _input.Player.Dash.performed += _ => OnDashPressed?.Invoke();
         _input.Player.Attack.performed += _ => OnAttackPressed?.Invoke();
         _input.Player.Jump.performed += _ => OnJumpPressed?.Invoke();
+        _input.Player.DownPlatform.performed += _ => OnDownPressed?.Invoke();
     }
 
     private void OnDisable()
@@ -31,6 +33,7 @@ public class PlayerInputHandler : MonoBehaviour
         _input.Player.Dash.performed -= _ => OnDashPressed?.Invoke();
         _input.Player.Attack.performed -= _ => OnAttackPressed?.Invoke();
         _input.Player.Jump.performed -= _ => OnJumpPressed?.Invoke();
+        _input.Player.DownPlatform.performed -= _ => OnDownPressed?.Invoke();
         _input.Disable();
     }
 

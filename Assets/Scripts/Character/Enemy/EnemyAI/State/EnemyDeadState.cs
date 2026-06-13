@@ -7,7 +7,7 @@ public class EnemyDeadState : IState
 {
     private readonly EnemyActorData _actorData;
 
- 
+
     private bool _deathTriggered;
 
     public EnemyDeadState(EnemyActorData ctx) => _actorData = ctx;
@@ -16,7 +16,8 @@ public class EnemyDeadState : IState
     {
         _deathTriggered = false;
         _actorData.Rigidbody.velocity = Vector2.zero;
-        _actorData.Rigidbody.bodyType = RigidbodyType2D.Kinematic; // 死後不被推動
+         _actorData.Rigidbody.gravityScale=2f;
+        _actorData.Rigidbody.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
         _actorData.AnimationSystem.PlayDead();
     }
 

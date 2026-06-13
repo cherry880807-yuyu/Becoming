@@ -19,9 +19,17 @@ public class AnimationSystem
         animator.SetBool("Dashing", state.isDashing);
         animator.SetFloat("VerticalVelocity", state.velocity.y);
     }
-    public void PlayAttack(int index)
+    public void PlayAttack(int index, ComboType comboType)
     {
-        animator.SetTrigger($"Attack{index}");
+        string attackType = comboType switch
+        {
+            ComboType.Ground => "NormalAttack",
+            ComboType.Dash => "DashAttack",
+            ComboType.Air => "AirAttack",
+            _ => "NormalAttack"
+        };
+
+        animator.SetTrigger($"{attackType}{index + 1}");
     }
     public void PlayHit()
     {
@@ -35,6 +43,14 @@ public class AnimationSystem
 
     public float GetAttackNormalizedTime()
     {
+        if (animator.IsInTransition(_attackLayerIndex))
+        {
+            // 取 next state 的資訊
+            var nextInfo = animator.GetNextAnimatorStateInfo(_attackLayerIndex);
+            if (nextInfo.IsTag("Attack")) return 0f; // 剛進入攻擊，給 0
+            return -1f;
+        }
+
         var info = animator.GetCurrentAnimatorStateInfo(_attackLayerIndex);
         if (!info.IsTag("Attack")) return -1f;
         return info.normalizedTime;
