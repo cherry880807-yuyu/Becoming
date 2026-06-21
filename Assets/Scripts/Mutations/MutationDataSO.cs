@@ -1,17 +1,42 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum SkillType
+{
+    Passive,
+    Active,
+    WeaponMembrane
+}
+public enum SubCategory
+{
+    Movement,
+    Jump,
+    Survival,
+    Combat,
+
+    Charge,
+    Lunge,
+    Aerial,
+    Enhance,
+    Special
+}
+
+
+
 [CreateAssetMenu(menuName = "Mutation/Mutation Data")]
-//成就及相關資料
 public class MutationDataSO : ScriptableObject
 {
     public string mutationID;
     public string mutationName;
     public Sprite icon;
+    public SkillType category;
+    public SubCategory passiveCategory;
+    public string selectionGroup = "Default";
+    [Min(1)] public int selectionLimit = 1;
 
-    //成就條件
     public List<MutationCondition> conditions;
-    //成就獎勵
     public List<MutationEffect> effects;
+
+    public bool IsPassive => category == SkillType.Passive;
+    public bool RequiresSelection => category != SkillType.Passive;
 }

@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea799d667af80b34d9d127bc5b511bec, type: 3}
   m_Name: Bird Attack Data
   m_EditorClassIdentifier: 
+  diveDamage: 100
+  diveCooldown: 5
   orbitRadiusX: 10
   orbitRadiusY: 3
   orbitHeightOffset: 6
@@ -25,5 +27,3 @@ MonoBehaviour:
   diveDuration: 1
   recoverDuration: 0.6
   diveSpeed: 15
-  diveDamage: 20
-  diveCooldown: 5

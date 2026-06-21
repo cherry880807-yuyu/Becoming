@@ -22,3 +22,5 @@ MonoBehaviour:
   entrances:
   - fromDirection: 0
     spawnPosition: {x: -18, y: -3}
+  - fromDirection: 1
+    spawnPosition: {x: 18, y: -3}

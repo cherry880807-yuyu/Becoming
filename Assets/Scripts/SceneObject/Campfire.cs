@@ -7,19 +7,40 @@ public class Campfire : MonoBehaviour
     [Header("每間隔治療量")]
     [SerializeField] int healPerSecond = 20;
     [Header("治療間隔時間")]
-    [SerializeField] float tickRate = 1f; 
+    [SerializeField] float tickRate = 1f;
 
-    private PlayerBrain player;
+    [Header("重生點")]
+    [SerializeField] private RoomDataSO _roomData;
+
+    [SerializeField] PlayerBrain player;
     private float timer;
+
+    private Animator animator;
+
+    void Awake()
+    {
+        animator=GetComponent<Animator>();
+    }
+    public void SetRegistered(bool isRegistered)
+    {
+        animator.SetBool("IsSpawnCampFire",isRegistered);
+    }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.TryGetComponent(out PlayerBrain pb)) player = pb;
+        if (other.GetComponentInParent<PlayerBrain>() is PlayerBrain pb)
+        {
+            player = pb;
+            RespawnManager.Instance.RegisterRespawnPoint(_roomData, this);
+        }
+
+
+        //TODO 設定重生點
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (other.TryGetComponent(out PlayerBrain pb)) if (player == pb) player = null;
+        if (other.GetComponentInParent<PlayerBrain>() is PlayerBrain pb) if (player == pb) player = null;
     }
 
     void Update()

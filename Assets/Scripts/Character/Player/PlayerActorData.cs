@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerActorData
 {
-    public Vector2 Facing;
+    public Vector2 Facing = new Vector2(1f, 0f);
 
     //Component
     public Rigidbody2D Rigidbody;
@@ -13,14 +13,16 @@ public class PlayerActorData
 
     //System
     public MovementSystem MovementSystem;
+    public JumpSystem JumpSystem;
     public DashSystem DashSystem;
     public AttackSystem AttackSystem;
     public AnimationSystem AnimationSystem;
 
+
     // optional
     public StaminaSystem StaminaSystem;
 
-    
+
     public PlayerActorData(Rigidbody2D rigidbody, Animator animator, Collider2D collider)
     {
         Rigidbody = rigidbody;

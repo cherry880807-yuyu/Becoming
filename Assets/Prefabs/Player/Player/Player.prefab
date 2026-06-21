@@ -698,8 +698,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Context:
-    test_TotalAttackCount: 0
+    deathCount: 0
+    totalAttackCount: 0
     dodgeSucceedCount: 0
+    totalJumpCount: 0
 --- !u!1 &4201879871816977730
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,6 +955,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8189739604601466933}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -11.717}
+--- !u!1 &5061604757530858952
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8004606056820608530}
+  - component: {fileID: 8799181684547650450}
+  m_Layer: 6
+  m_Name: DashEffect
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8004606056820608530
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5061604757530858952}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -1.842, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5975783540207247843}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8799181684547650450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5061604757530858952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00b3bde948ca42e45994fca01426759a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dustPrefab: {fileID: 8571798420980753994, guid: bf6739be7955c554783dc04c5b8bdcfb, type: 3}
 --- !u!1 &5673007235030058755
 GameObject:
   m_ObjectHideFlags: 0
@@ -986,6 +1033,7 @@ Transform:
   - {fileID: 801463721931112807}
   - {fileID: 4401697344693853185}
   - {fileID: 7301188470734495069}
+  - {fileID: 8004606056820608530}
   m_Father: {fileID: 8435184001118467555}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5756951138034084023

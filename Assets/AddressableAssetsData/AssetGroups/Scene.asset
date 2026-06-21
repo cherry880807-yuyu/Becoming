@@ -22,6 +22,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7aab7d8c4c826a647802d2d2cd6ebae3
+    m_Address: Room_Forest_03.unity
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fe2fb1ad3ad483243ac0c29d65f93627
     m_Address: Room_Forest_02.unity
     m_ReadOnly: 0

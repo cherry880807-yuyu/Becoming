@@ -27,7 +27,6 @@ public class PlayerBrain : BaseBrain, IDamageable
 
     // ────────────────────────────────────────────────────
 
-
     protected override void Awake()
     {
         _input = GetComponent<PlayerInputHandler>();
@@ -57,6 +56,11 @@ public class PlayerBrain : BaseBrain, IDamageable
         _input.OnJumpPressed -= HandleJump;
         _input.OnDownPressed -= HandleDown;
         PlayerActorData?.AttackSystem?.Dispose();
+
+    }
+    public void Oestroy()
+    {
+        PlayerLocator.Instance.Unregister(transform);
     }
 
     // ── Build ─────────────────────────────────────────────
@@ -69,6 +73,7 @@ public class PlayerBrain : BaseBrain, IDamageable
             transform.GetChild(0).GetComponent<Collider2D>()
         );
         PlayerActorData.MovementSystem = new MovementSystem(PlayerActorData, new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
+        PlayerActorData.JumpSystem = new JumpSystem(PlayerActorData, movementData.baseAirJumps, movementData.jumpForce);
         PlayerActorData.DashSystem = new DashSystem(new PlayerDash_TypeA(dashData), this);
         PlayerActorData.AttackSystem = new AttackSystem(PlayerActorData, weapon);
         PlayerActorData.AnimationSystem = new AnimationSystem(PlayerActorData.Animator);
@@ -82,7 +87,7 @@ public class PlayerBrain : BaseBrain, IDamageable
     {
         // IsGrounded 快取：同一幀只做一次 BoxCast
         _isGrounded = GetGroundedCached();
-
+        if (_isGrounded) PlayerActorData.JumpSystem.ResetAirJumps();
         PlayerActorData.StaminaSystem.Regen(Time.deltaTime);
         PlayerActorData.AttackSystem.EvaluateCombo();
         HandleFacing();
@@ -104,15 +109,20 @@ public class PlayerBrain : BaseBrain, IDamageable
         if (!PlayerActorData.StaminaSystem.CanUse(dashData.dashCost)) return;
         PlayerActorData.StaminaSystem.Consume(dashData.dashCost);
         PlayerActorData.DashSystem.Execute(PlayerActorData.Rigidbody, _input.LastMoveDir);
+
+        EventBus.Publish(new DashEvent
+        {
+            WorldPosition = new Vector3( transform.position.x,PlayerActorData.Collider.bounds.min.y,transform.position.z),
+            FacingRight = PlayerActorData.Facing
+        });
     }
 
     private void HandleAttack() => PlayerActorData.AttackSystem.OnAttackInput();
 
     private void HandleJump()
     {
-        if (!_isGrounded) return;
-        PlayerActorData.Rigidbody.velocity = new Vector2(PlayerActorData.Rigidbody.velocity.x, 0f);
-        PlayerActorData.Rigidbody.AddForce(Vector2.up * movementData.jumpForce, ForceMode2D.Impulse);
+        if (!PlayerActorData.JumpSystem.OnJumpInput()) return;
+        EventBus.Publish(new JumpEvent());
         EventBus.Publish(new ResetAttackComboEvent());
     }
     private void HandleDown()
@@ -200,13 +210,14 @@ public class PlayerBrain : BaseBrain, IDamageable
 
         bool IsEnemyAlive = false;
         if (damageable is BaseBrain baseBrain) IsEnemyAlive = baseBrain.IsAlive;
-         float angleRad = PlayerActorData.AttackSystem.CurrentStep.KnockbackAngle * Mathf.Deg2Rad;
+        float angleRad = PlayerActorData.AttackSystem.CurrentStep.KnockbackAngle * Mathf.Deg2Rad;
 
         damageable.TakeDamage(new DamageInfo
         {
             damage = PlayerActorData.AttackSystem.FinalDamage,
             knockbackForce = PlayerActorData.AttackSystem.CurrentStep.knockbackForce,
-            hitDirection = new Vector2(Mathf.Cos(angleRad) * PlayerActorData.Facing.x,Mathf.Sin(angleRad))
+            hitDirection = new Vector2(Mathf.Cos(angleRad) * PlayerActorData.Facing.x, Mathf.Sin(angleRad)),
+            attackerPosition = (Vector2)transform.position
         });
 
         if (IsEnemyAlive)
@@ -225,6 +236,7 @@ public class PlayerBrain : BaseBrain, IDamageable
     public void TakeDamage(DamageInfo info)
     {
         if (!IsAlive) return;
+        FaceTowards(info.attackerPosition);
         PlayerActorData.AnimationSystem.PlayHit();
         ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
     }
@@ -244,6 +256,10 @@ public class PlayerBrain : BaseBrain, IDamageable
     {
         base.HandleDeath(); // 觸發 OnDeath event
         enabled = false;
+        EventBus.Publish(new PlayerDiedEvent
+        {
+            WorldPosition = transform.position
+        });
         // TODO: 接 Event Bus → GameOverSystem / MutationSystem（能力清除）
         // GameEventBus.Emit(new PlayerDiedEvent());
     }
@@ -263,6 +279,15 @@ public class PlayerBrain : BaseBrain, IDamageable
         PlayerActorData.Facing = _input.MoveInput.normalized;
         // 避免每幀 new Vector3：只在方向改變時設
         float scaleX = PlayerActorData.Facing.x < 0 ? -1f : 1f;
+        if (!Mathf.Approximately(transform.GetChild(0).localScale.x, scaleX)) transform.GetChild(0).localScale = new Vector3(scaleX, 1f, 1f);
+    }
+    private void FaceTowards(Vector2 targetPosition)
+    {
+        float dirX = targetPosition.x - transform.position.x;
+        if (Mathf.Approximately(dirX, 0f)) return;
+
+        float scaleX = dirX > 0f ? 1f : -1f;
+        PlayerActorData.Facing = new Vector2(scaleX, 0f);
         if (!Mathf.Approximately(transform.GetChild(0).localScale.x, scaleX)) transform.GetChild(0).localScale = new Vector3(scaleX, 1f, 1f);
     }
 

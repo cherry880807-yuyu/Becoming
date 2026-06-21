@@ -55,6 +55,7 @@ public abstract class BaseBrain : MonoBehaviour
     {
         CurrentShield = shield;
     }
+    // ────────────────────────────────
 
     public void OnHitboxOpen() => _Hitbox.Activate();
     public void OnHitboxClose() => _Hitbox.Deactivate();
@@ -96,6 +97,11 @@ public abstract class BaseBrain : MonoBehaviour
             WorldPosition = GetDamageTextPosition()
         });
 
+    }
+    public void Respawn(int restoreHP)
+    {
+        CurrentHP = Mathf.Clamp(restoreHP, 1, MaxHP);
+        OnHPChanged?.Invoke(CurrentHP);
     }
     // ────────────────────────────────
     protected virtual void OnHit(IDamageable damageable, Vector2 knockDir)

@@ -9,8 +9,9 @@ public class TransitionFader : MonoBehaviour
     [SerializeField] private float _fadeDuration = 0.4f;
     void Awake()
     {
-        _canvasGroup=GetComponent<CanvasGroup>();
-        _canvasGroup.alpha=0f;
+        DontDestroyOnLoad(gameObject);
+        _canvasGroup = GetComponent<CanvasGroup>();
+        _canvasGroup.alpha = 0f;
     }
 
     public IEnumerator FadeOut()

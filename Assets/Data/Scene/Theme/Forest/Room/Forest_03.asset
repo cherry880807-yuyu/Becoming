@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e266bceba63e3ff4f83fdd63c564db77, type: 3}
+  m_Name: Forest_03
+  m_EditorClassIdentifier: 
+  roomId: Forest_03
+  sceneReference:
+    m_AssetGUID: 7aab7d8c4c826a647802d2d2cd6ebae3
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  entrances:
+  - fromDirection: 0
+    spawnPosition: {x: -18, y: -3}

@@ -44,7 +44,7 @@ public class MovementSystem
     }
     public void SetSprint(bool value)
     {
-        IsSprint=value;
+        IsSprint = value;
         if (core is ISprintable sprintableCore)
         {
             sprintableCore.SetSprint(value);
@@ -66,7 +66,7 @@ public class MovementSystem
            LayerMask.GetMask("Ground", "Platform")
        ).collider != null;
 
-        if (hitGround&& actorData.Rigidbody.velocity.y <= 0.05f)
+        if (hitGround && actorData.Rigidbody.velocity.y <= 0.05f)
         {
             _lastGroundedTime = Time.time;
         }
@@ -113,6 +113,74 @@ public class MovementSystem
             LayerMask.GetMask("Platform")
         );
         return hit.collider;
+    }
+
+}
+
+
+public class JumpSystem
+{
+    private PlayerActorData actorData;
+    private int baseAirJumps;
+    private float jumpForce;
+
+    private int bonusAirJumps = 0;
+    private int airJumpsRemaining=0;
+
+    public JumpSystem(PlayerActorData actorData, int baseAirJumps, float jumpForce)
+    {
+        this.actorData = actorData;
+        this.baseAirJumps = baseAirJumps;
+        this.jumpForce = jumpForce;
+    }
+
+    public bool OnJumpInput()
+    {
+        if (actorData.MovementSystem.IsGrounded)
+        {
+            Jump();
+            return true;
+        }
+        else
+        {
+            if (TryConsumeAirJump())
+            {
+                Jump();
+                return true;
+            }
+        }
+        return false;
+        
+    }
+    private void Jump()
+    {
+        actorData.Rigidbody.velocity = new Vector2(actorData.Rigidbody.velocity.x, 0);
+        actorData.Rigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+    }
+    public bool TryConsumeAirJump()
+    {
+        if (airJumpsRemaining <= 0)
+        {
+            return false;
+        }
+
+        airJumpsRemaining--;
+        return true;
+    }
+
+    public void ResetAirJumps()
+    {
+        airJumpsRemaining = baseAirJumps + bonusAirJumps;
+    }
+
+    public void AddBonusAirJumps(int amount)
+    {
+        bonusAirJumps += amount;
+    }
+
+    public void RemoveBonusAirJumps(int amount)
+    {
+        bonusAirJumps -= amount;
     }
 
 }

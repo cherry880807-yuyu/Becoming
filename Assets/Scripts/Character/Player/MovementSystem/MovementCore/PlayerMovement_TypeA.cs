@@ -26,4 +26,5 @@ public class PlayerMovement_TypeA : IMovementCore, ISprintable
         isSprinting = sprint;
     }
 
+
 }

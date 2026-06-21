@@ -35,6 +35,15 @@ public struct DodgeSucceededEvent : IFloatingTextEvent  //成功閃避技能
     }
 }
 
+public struct JumpEvent
+{
+
+}
+public struct DashEvent
+{
+    public Vector3 WorldPosition;
+    public Vector2 FacingRight;
+}
 //---------------------------------------------
 public struct DamageDealtEvent : IFloatingTextEvent
 {
@@ -75,9 +84,20 @@ public struct EnemyDiedEvent
 
 public struct PlayerDiedEvent
 {
+    public float DiedTime;
+    public Vector3 WorldPosition;
+}
 
+public struct PlayerRespawnedEvent
+{
+    public Vector3 RespawnPosition;
 }
 //---------------------------------------------
+public struct GameStartedEvent
+{
+
+}
+
 public struct ExitRoomEvent
 {
     public RoomDataSO nextRoom;
@@ -85,4 +105,4 @@ public struct ExitRoomEvent
 }
 
 //---------------------------------------------
-public struct ResetAttackComboEvent{}
+public struct ResetAttackComboEvent { }

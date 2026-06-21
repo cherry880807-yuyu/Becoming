@@ -8,6 +8,8 @@ using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 public class SceneController : Singleton<SceneController>
 {
+    [Header("開始遊戲過廠動畫")]
+    [SerializeField] private Animator mainMenuAnimator;
 
     [SerializeField] private WorldMapSO _worldMap;
     [SerializeField] private TransitionFader _fader; // 淡入淡出 UI
@@ -20,6 +22,8 @@ public class SceneController : Singleton<SceneController>
 
     public event Action OnRoomLoaded;
 
+    public RoomDataSO StartRoom => _worldMap.startRoom;
+
     protected override void Awake()
     {
         base.Awake();
@@ -28,23 +32,49 @@ public class SceneController : Singleton<SceneController>
 
     private void OnEnable()
     {
+        EventBus.Subscribe<GameStartedEvent>(GameStart);
         EventBus.Subscribe<ExitRoomEvent>(OnExitRoom);
     }
 
     private void OnDisable()
     {
+        EventBus.Unsubscribe<GameStartedEvent>(GameStart);
         EventBus.Unsubscribe<ExitRoomEvent>(OnExitRoom);
     }
 
-    void Start()
+    private void GameStart(GameStartedEvent e)
     {
-        //StartCoroutine(LoadPersistent());
-        TransitionTo(_worldMap.startRoom, new Vector2(0f, 0f));
-
+        StartCoroutine(GameStartRoutine());
     }
+    private IEnumerator GameStartRoutine()
+    {
+        mainMenuAnimator.SetTrigger("StartGame");
+        yield return WaitForAnimation(mainMenuAnimator, "MainMenuStartGameAnim");
+        yield return LoadPersistent();
+        TransitionTo(_worldMap.startRoom, new Vector2(0f, 0f));
+    }
+    private IEnumerator WaitForAnimation(Animator animator, string stateName)
+    {
+        // 等進入 state
+        while (!animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
+            yield return null;
+
+        // 等 transition 結束
+        while (animator.IsInTransition(0))
+            yield return null;
+
+        // 等播完
+        var state = animator.GetCurrentAnimatorStateInfo(0);
+        while (state.normalizedTime < 1f)
+        {
+            state = animator.GetCurrentAnimatorStateInfo(0);
+            yield return null;
+        }
+    }
+
     private IEnumerator LoadPersistent()
     {
-        var handle = SceneManager.LoadSceneAsync("PersistentScene", LoadSceneMode.Additive);
+        var handle = SceneManager.LoadSceneAsync("PersistentScene", LoadSceneMode.Single);
         yield return handle;
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("PersistentScene"));
     }
@@ -72,7 +102,9 @@ public class SceneController : Singleton<SceneController>
         SceneManager.SetActiveScene(loadHandle.Result.Scene);
 
         PlayerLocator.Instance.SetPosition(spawnPos);
+        InputManager.Instance.SetInputActionMap(InputMode.Playing);
         OnRoomLoaded?.Invoke();
+
 
 
         if (_hasLoadedScene && _currentSceneHandle.IsValid()) yield return Addressables.UnloadSceneAsync(_currentSceneHandle);
