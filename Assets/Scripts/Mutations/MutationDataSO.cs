@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public enum SkillType
@@ -33,10 +34,14 @@ public class MutationDataSO : ScriptableObject
     public SubCategory passiveCategory;
     public string selectionGroup = "Default";
     [Min(1)] public int selectionLimit = 1;
+    [TextArea] public string lockedDescription;
+    [TextArea] public string unlockedDescription;
 
     public List<MutationCondition> conditions;
     public List<MutationEffect> effects;
 
     public bool IsPassive => category == SkillType.Passive;
     public bool RequiresSelection => category != SkillType.Passive;
+
+
 }

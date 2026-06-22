@@ -11,16 +11,19 @@ public class UIManager : Singleton<UIManager>
     protected override void Awake()
     {
         base.Awake();
-        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(gameObject);
     }
     private void OnEnable()
     {
         _uiInput = InputManager.Instance.InputAction.UI;
+        Debug.Log(_uiInput);
         _uiInput.Cancel.performed += HandleUIBackPerformed;
     }
-    private void OnDisable()
+    void OnDisable()
     {
+        Debug.Log(_uiInput);
         _uiInput.Cancel.performed -= HandleUIBackPerformed;
+
     }
 
     //------------------------

@@ -14,6 +14,7 @@ public class SkillMutationView : MonoBehaviour
     }
 
     [SerializeField] private SkillMutationItem itemPrefab;
+    [SerializeField] private SkillMutationTooltip tooltip;
     [SerializeField] private List<CategoryContainer> containers = new();
 
     private readonly Dictionary<MutationDataSO, SkillMutationItem> spawnedItems = new();
@@ -58,6 +59,7 @@ public class SkillMutationView : MonoBehaviour
             mutation,
             MutationManager.Instance.IsUnlocked(mutation),
             MutationManager.Instance.IsSelected(mutation),
+            tooltip,
             HandleItemClicked);
         spawnedItems.Add(mutation, item);
     }
