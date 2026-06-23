@@ -51,6 +51,11 @@ public class Campfire : MonoBehaviour
         if (timer >= tickRate)
         {
             player.Heal(healPerSecond);
+            EventBus.Publish(new CampfireHealEvent
+            {
+                player = player,
+                healAmount = healPerSecond
+            });
             timer = 0f;
         }
     }

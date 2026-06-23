@@ -15,6 +15,10 @@ public class MutationTracker : MonoBehaviour
         EventBus.Subscribe<DodgeSucceededEvent>(OnPlayerDodgeSucceed);
         EventBus.Subscribe<JumpEvent>(OnPlayerJumped);
         EventBus.Subscribe<PlayerDiedEvent>(OnPlayerDied);
+        EventBus.Subscribe<PlayerSprintDistanceEvent>(OnPlayerSprintDistanceChanged);
+        EventBus.Subscribe<DashEvent>(OnPlayerDashed);
+        EventBus.Subscribe<EnemyDiedEvent>(OnEnemyDied);
+        EventBus.Subscribe<CampfireHealEvent>(OnCampfireHealed);
     }
 
     private void OnDisable()
@@ -23,6 +27,10 @@ public class MutationTracker : MonoBehaviour
         EventBus.Unsubscribe<DodgeSucceededEvent>(OnPlayerDodgeSucceed);
         EventBus.Unsubscribe<JumpEvent>(OnPlayerJumped);
         EventBus.Unsubscribe<PlayerDiedEvent>(OnPlayerDied);
+        EventBus.Unsubscribe<PlayerSprintDistanceEvent>(OnPlayerSprintDistanceChanged);
+        EventBus.Unsubscribe<DashEvent>(OnPlayerDashed);
+        EventBus.Unsubscribe<EnemyDiedEvent>(OnEnemyDied);
+        EventBus.Unsubscribe<CampfireHealEvent>(OnCampfireHealed);
     }
 
     private void OnEnemyAttacked(AttackEnemyEvent e)
@@ -46,6 +54,30 @@ public class MutationTracker : MonoBehaviour
     private void OnPlayerDied(PlayerDiedEvent e)
     {
         Context.deathCount++;
+        MutationManager.Instance.EvaluateMutations(Context);
+    }
+
+    private void OnPlayerSprintDistanceChanged(PlayerSprintDistanceEvent e)
+    {
+        Context.totalSprintDistance += e.distance;
+        MutationManager.Instance.EvaluateMutations(Context);
+    }
+
+    private void OnPlayerDashed(DashEvent e)
+    {
+        Context.totalDashCount++;
+        MutationManager.Instance.EvaluateMutations(Context);
+    }
+
+    private void OnEnemyDied(EnemyDiedEvent e)
+    {
+        Context.enemyKillsSinceCampfireHeal++;
+        MutationManager.Instance.EvaluateMutations(Context);
+    }
+
+    private void OnCampfireHealed(CampfireHealEvent e)
+    {
+        Context.enemyKillsSinceCampfireHeal = 0;
         MutationManager.Instance.EvaluateMutations(Context);
     }
 

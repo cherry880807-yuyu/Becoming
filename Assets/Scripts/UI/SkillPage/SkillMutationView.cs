@@ -28,6 +28,7 @@ public class SkillMutationView : MonoBehaviour
     private void OnDisable()
     {
         EventBus.Unsubscribe<MutationUnlockedEvent>(HandleMutationUnlocked);
+        tooltip.Hide();
     }
 
     public void Rebuild()

@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae9fc92eb9395ce4a996861b8dc6e4cc, type: 3}
-  m_Name: AddBonusDamage_2
+  m_Script: {fileID: 11500000, guid: df1919565e2b6744d88d5146de1ea465, type: 3}
+  m_Name: "\u8DF3\u8E8D5\u6B21"
   m_EditorClassIdentifier: 
-  damage: 2
+  requiredJumpCount: 5

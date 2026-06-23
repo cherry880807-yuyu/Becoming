@@ -51,6 +51,22 @@ public class MovementSystem
         }
     }
 
+    public void AddSprintSpeedMultiplier(float multiplier)
+    {
+        if (core is ISprintable sprintableCore)
+        {
+            sprintableCore.AddSprintSpeedMultiplier(multiplier);
+        }
+    }
+
+    public void RemoveSprintSpeedMultiplier(float multiplier)
+    {
+        if (core is ISprintable sprintableCore)
+        {
+            sprintableCore.RemoveSprintSpeedMultiplier(multiplier);
+        }
+    }
+
     public void CheckGrounded_ByBoxCast()
     {
         Bounds b = actorData.Collider.bounds;

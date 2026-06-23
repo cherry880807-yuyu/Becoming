@@ -99,15 +99,27 @@ public class PlayerBrain : BaseBrain, IDamageable
         PlayerActorData.MovementSystem.CheckGrounded_ByBoxCast();
         PlayerActorData.MovementSystem.SetSprint(_input.IsSprinting);
         PlayerActorData.MovementSystem.Move(PlayerActorData.Rigidbody, _input.MoveInput);
+        PublishSprintDistance();
 
         HandleAirPhysics();
     }
 
     // ── Input Handlers ────────────────────────────────────
+    private void PublishSprintDistance()
+    {
+        if (!_input.IsSprinting || Mathf.Abs(_input.MoveInput.x) <= 0.01f) return;
+
+        float distance = Mathf.Abs(PlayerActorData.Rigidbody.velocity.x) * Time.fixedDeltaTime;
+        if (distance <= 0f) return;
+
+        EventBus.Publish(new PlayerSprintDistanceEvent {distance = distance});
+    }
+
     private void HandleDash()
     {
-        if (!PlayerActorData.StaminaSystem.CanUse(dashData.dashCost)) return;
-        PlayerActorData.StaminaSystem.Consume(dashData.dashCost);
+        float dashCost = PlayerActorData.DashSystem.GetModifiedDashCost(dashData.dashCost);
+        if (!PlayerActorData.StaminaSystem.CanUse(dashCost)) return;
+        PlayerActorData.StaminaSystem.Consume(dashCost);
         PlayerActorData.DashSystem.Execute(PlayerActorData.Rigidbody, _input.LastMoveDir);
 
         EventBus.Publish(new DashEvent
@@ -211,6 +223,12 @@ public class PlayerBrain : BaseBrain, IDamageable
         bool IsEnemyAlive = false;
         if (damageable is BaseBrain baseBrain) IsEnemyAlive = baseBrain.IsAlive;
         float angleRad = PlayerActorData.AttackSystem.CurrentStep.KnockbackAngle * Mathf.Deg2Rad;
+
+        EventBus.Publish(new PlayerDamageDealtEvent
+        {
+            Damage = PlayerActorData.AttackSystem.FinalDamage,
+            WorldPosition = transform.position
+        });
 
         damageable.TakeDamage(new DamageInfo
         {

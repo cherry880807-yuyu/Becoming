@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca37b3d4604fabe4594d3aa70c6ee4ef, type: 3}
-  m_Name: Add Double Jump Effect
+  m_Script: {fileID: 11500000, guid: b8cde5c58c71aca4f80dae2a6edbc1dd, type: 3}
+  m_Name: "\u4E0D\u9760\u7BDD\u706B\u56DE\u8840\u64CA\u6BBA\u602A\u726910\u96BB"
   m_EditorClassIdentifier: 
-  bonusJump: 1
+  requiredKillCount: 10

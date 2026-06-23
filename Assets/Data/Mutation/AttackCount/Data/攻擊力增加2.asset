@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10272b721c8d2724ca52b72c7bf989d5, type: 3}
-  m_Name: AttackCount_3
+  m_Script: {fileID: 11500000, guid: ae9fc92eb9395ce4a996861b8dc6e4cc, type: 3}
+  m_Name: "\u653B\u64CA\u529B\u589E\u52A02"
   m_EditorClassIdentifier: 
-  requiredExposure: 3
+  damage: 2

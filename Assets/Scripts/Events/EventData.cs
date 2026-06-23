@@ -44,6 +44,17 @@ public struct DashEvent
     public Vector3 WorldPosition;
     public Vector2 FacingRight;
 }
+
+public struct PlayerSprintDistanceEvent
+{
+    public float distance;
+}
+
+public struct CampfireHealEvent
+{
+    public PlayerBrain player;
+    public int healAmount;
+}
 //---------------------------------------------
 public struct DamageDealtEvent : IFloatingTextEvent
 {
@@ -58,6 +69,12 @@ public struct DamageDealtEvent : IFloatingTextEvent
             WorldPosition = WorldPosition
         };
     }
+}
+
+public struct PlayerDamageDealtEvent
+{
+    public int Damage;
+    public Vector3 WorldPosition;
 }
 
 public struct HealEvent : IFloatingTextEvent
