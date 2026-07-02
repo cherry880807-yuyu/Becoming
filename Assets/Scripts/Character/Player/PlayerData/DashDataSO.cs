@@ -1,10 +1,9 @@
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Player/Dash Data")]
-public class DashDataSO : ScriptableObject
+public class DodgeDataSO : ScriptableObject
 {
-     public float dashDistance = 3f;
-    public float dashDuration = 0.15f;
-    public float dashCooldown = 0.8f;
-    public float dashCost = 30f;
+     public float dodgeDistance = 3f;
+    public float dodgeDuration = 0.15f;
+    public float dodgeCost = 30f;
 }

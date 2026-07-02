@@ -14,9 +14,13 @@ public class PlayerActorData
     //System
     public MovementSystem MovementSystem;
     public JumpSystem JumpSystem;
-    public DashSystem DashSystem;
-    public AttackSystem AttackSystem;
+    public DodgeSystem DodgeSystem;
+    public PlayerNormalAttackInputSystem PlayerNormalAttackInputSystem;
+    public PlayerWeaponInventorySystem WeaponInventorySystem;
     public AnimationSystem AnimationSystem;
+    public PlayerCombatSystem CombatSystem;
+    public SkillSystem SkillSystem;
+    public PlayerSkillInputSystem SkillInputSystem;
 
 
     // optional

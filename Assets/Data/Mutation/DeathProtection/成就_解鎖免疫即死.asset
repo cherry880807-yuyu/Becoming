@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d48c0cd9a90a4344b8633f7328d2ab5, type: 3}
+  m_Name: "\u6210\u5C31_\u89E3\u9396\u514D\u75AB\u5373\u6B7B"
+  m_EditorClassIdentifier: 
+  mutationID: 
+  mutationName: "\u6C42\u751F\u610F\u5FD7"
+  icon: {fileID: 21300000, guid: e0623ee882258ae4389f908e9fad74b2, type: 3}
+  category: 0
+  subCategory: 2
+  mutationType: {fileID: 11400000, guid: 03a1910c6c53cb14bb1d6d4aa8271cba, type: 2}
+  selectionLimit: 1
+  lockedDescription: "\u9762\u5C0D\u53EF\u80FD\u6B7B\u4EA1\u7684\u6050\u61FC"
+  unlockedDescription: "\u514D\u75AB\u6B7B\u4EA1\u4E00\u6B21\uFF0C\u4E26\u56DE\u5FA9\u6700\u5927\u6C23\u8840\u768410%"
+  conditions:
+  - {fileID: 11400000, guid: dbe4c6a3404e10345940de6797ef8594, type: 2}
+  effects:
+  - {fileID: 11400000, guid: a41742d55e746584590e12f6116df985, type: 2}

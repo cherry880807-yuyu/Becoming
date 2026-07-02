@@ -4,7 +4,7 @@ using UnityEngine;
 public enum InvincibleType
 {
     None,
-    Dash,
+    Dodge,
     Buff,
 }
 
@@ -12,7 +12,7 @@ public static class InvincibleTypeDB
 {
     public static readonly Dictionary<InvincibleType, string> Text = new()
     {
-        { InvincibleType.Dash, "閃避" },
+        { InvincibleType.Dodge, "閃避" },
         { InvincibleType.Buff, "無敵" },
     };
 }

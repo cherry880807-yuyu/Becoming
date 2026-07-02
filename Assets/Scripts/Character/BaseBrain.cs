@@ -36,6 +36,10 @@ public abstract class BaseBrain : MonoBehaviour
     protected virtual void Start() { }
     protected virtual void OnEnable()
     {
+        if (_Hitbox == null) _Hitbox = GetComponentInChildren<HitBox2D>();
+
+        if (_Hitbox != null)  _Hitbox.damagePreviewProvider = GetHitDamagePreview;
+
         _Hitbox.onHit += OnHit;
     }
     protected virtual void OnDisable()
@@ -60,7 +64,7 @@ public abstract class BaseBrain : MonoBehaviour
     public void OnHitboxOpen() => _Hitbox.Activate();
     public void OnHitboxClose() => _Hitbox.Deactivate();
 
-    public void ApplyDamage(int rawDamage, Vector2 knockbackDir, float knockbackForce)
+    public void ApplyDamage(int rawDamage, Vector2 knockbackDir, float knockbackForce, bool triggerDeath = true)
     {
         if (!IsAlive) return;
         int finalDamage = rawDamage;
@@ -83,7 +87,7 @@ public abstract class BaseBrain : MonoBehaviour
             WorldPosition = GetDamageTextPosition()
         });
 
-        if (!IsAlive) HandleDeath();
+        if (triggerDeath && !IsAlive) HandleDeath();
     }
 
     public void ApplyHeal(int amount)
@@ -108,6 +112,9 @@ public abstract class BaseBrain : MonoBehaviour
     {
 
     }
+
+    protected virtual int GetHitDamagePreview(IDamageable target) => 0;
+
     protected abstract void OnApplyKnockback(Vector2 dir, float force);
 
     protected virtual void HandleDeath()

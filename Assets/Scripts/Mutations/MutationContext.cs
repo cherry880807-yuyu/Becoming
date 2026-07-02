@@ -28,4 +28,16 @@ public class MutationContext
     [Header("不依靠篝火回血累計擊殺怪物數")]
     public int enemyKillsSinceCampfireHeal;
 
+    [Header("Player health percent")]
+    public float playerHealthPercent = 1f;
+
+    [Header("Total lethal dodges")]
+    public int totalLethalDodgeCount;
+
+    [Header("Equipped weapon")]
+    public WeaponDataSO equippedWeapon;
+
+    [Header("Equipped mutation type")]
+    public WeaponFamilySO equippedMutationType;
+
 }

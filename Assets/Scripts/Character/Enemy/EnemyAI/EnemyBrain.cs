@@ -159,10 +159,10 @@ public class EnemyBrain : BaseBrain, IDamageable
 
 
     // ── IDamageable ──────────────────────────────────────
-    public void TakeDamage(DamageInfo info)
+    public void TakeDamage(HitConfig hitConfig)
     {
         if (!IsAlive) return;
-        ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
+        ApplyDamage(hitConfig.Damage, hitConfig.HitDirection, hitConfig.KnockbackForce);
         if (_flashRoutine != null) StopCoroutine(_flashRoutine);
         _flashRoutine = StartCoroutine(HitFlash());
 

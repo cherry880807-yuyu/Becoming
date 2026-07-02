@@ -14,6 +14,7 @@ public class SkillMutationItem : BaseButton, IPointerEnterHandler, IPointerExitH
     private Action<MutationDataSO> onClicked;
     private bool isSelected;
     private bool isUnlocked;
+    private bool isSelectable;
 
     protected override void Awake()
     {
@@ -25,26 +26,20 @@ public class SkillMutationItem : BaseButton, IPointerEnterHandler, IPointerExitH
         this.mutationData = mutationData;
         this.tooltip = tooltip;
         this.onClicked = onClicked;
-        SetState(unlocked, selected);
+        SetState(unlocked, selected, unlocked && mutationData.RequiresSelection);
     }
 
-    public void SetState(bool unlocked, bool selected)
+    public void SetState(bool unlocked, bool selected, bool selectable)
     {
         isUnlocked = unlocked;
         isSelected = selected;
-        UpdateUI();
-    }
-
-    public void SetSelected(bool selected)
-    {
-        isSelected = selected;
+        isSelectable = selectable;
         UpdateUI();
     }
 
     private void UpdateUI()
     {
-        if (mutationData == null)
-            return;
+        if (mutationData == null)  return;
 
         if (iconImage != null)
         {
@@ -52,28 +47,23 @@ public class SkillMutationItem : BaseButton, IPointerEnterHandler, IPointerExitH
             iconImage.color = isUnlocked ? Color.white : LockedIconColor;
         }
 
-        if (outline != null)
-            outline.enabled = isSelected;
+        if (outline != null) outline.enabled = isSelected;
 
-        if (button != null)
-            button.interactable = isUnlocked && mutationData.RequiresSelection;
+        if (button != null) button.interactable = isSelectable;
     }
 
     protected override void OnClick()
     {
-        if (isUnlocked && mutationData != null)
-            onClicked?.Invoke(mutationData);
+        if (isSelectable && mutationData != null)  onClicked?.Invoke(mutationData);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (tooltip != null && mutationData != null)
-            tooltip.Show(mutationData, isUnlocked,(RectTransform)transform);
+        if (tooltip != null && mutationData != null) tooltip.Show(mutationData, isUnlocked,(RectTransform)transform);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (tooltip != null)
-            tooltip.Hide();
+        if (tooltip != null) tooltip.Hide();
     }
 }

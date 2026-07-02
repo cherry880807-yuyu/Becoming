@@ -24,12 +24,17 @@ public class Monster_Bird_Enemy : EnemyBrain
     }
     protected override void OnHit(IDamageable damageable, Vector2 knockDir)
     {
-        damageable.TakeDamage(new DamageInfo
-        {
-            damage = _birdAttackData.diveDamage,
-            knockbackForce = 0,
-            hitDirection = knockDir
-        });
+        damageable.TakeDamage(new HitConfig(
+            _birdAttackData.diveDamage,
+            knockDir,
+            0f,
+            transform.position,
+            0f));
+    }
+
+    protected override int GetHitDamagePreview(IDamageable target)
+    {
+        return _birdAttackData != null ? _birdAttackData.diveDamage : 0;
     }
 }
 

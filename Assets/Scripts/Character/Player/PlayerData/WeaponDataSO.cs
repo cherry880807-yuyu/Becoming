@@ -18,6 +18,9 @@ public enum ComboType
 public class WeaponDataSO : ScriptableObject
 {
     [Header("Weapon")]
+    public string weaponId;
+    public string displayName;
+    public WeaponFamilySO mutationType;
     public GameObject weaponPrefab;
 
     [Header("Combo")]
@@ -27,6 +30,9 @@ public class WeaponDataSO : ScriptableObject
 
     public float resetTime;
 
+    [Header("Skills")]
+    public List<WeaponSkillSlot> skillSlots = new();
+
     public ComboStep[] GetSteps(ComboType comboType) => comboType switch
     {
         ComboType.Ground => groundSteps,
@@ -35,6 +41,14 @@ public class WeaponDataSO : ScriptableObject
         _ => groundSteps
     };
 
+}
+
+[System.Serializable]
+public class WeaponSkillSlot
+{
+    public SubCategory subCategory;
+    [Min(1)] public int selectionLimit = 1;
+    public List<ActiveSkillDataSO> skills = new();
 }
 
 [System.Serializable]

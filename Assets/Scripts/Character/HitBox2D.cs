@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,8 +7,9 @@ public class HitBox2D : MonoBehaviour
 {
     protected Collider2D col;
     public Team ownerTeam;
-    private HashSet<IDamageable> _hitSet = new();//防重複命中
+    private readonly HashSet<IDamageable> hitSet = new();
     public Action<IDamageable, Vector2> onHit;
+    public Func<IDamageable, int> damagePreviewProvider;
 
     protected virtual void Awake()
     {
@@ -20,7 +20,7 @@ public class HitBox2D : MonoBehaviour
 
     public virtual void Activate()
     {
-        _hitSet.Clear();
+        hitSet.Clear();
         col.enabled = true;
     }
 
@@ -31,28 +31,33 @@ public class HitBox2D : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        var hurtBox = other.GetComponent<HurtBox2D>();
-        if (hurtBox == null) return;
-        if (hurtBox.Team == ownerTeam) return;
-        
-        var invincibleType = hurtBox.GetCurrentInvincibleType();
+        HurtBox2D hurtBox = other.GetComponent<HurtBox2D>();
+        if (hurtBox == null || hurtBox.Team == ownerTeam)
+            return;
+
+        InvincibleType invincibleType = hurtBox.GetCurrentInvincibleType();
         if (invincibleType != InvincibleType.None)
         {
+            int incomingDamage = damagePreviewProvider?.Invoke(hurtBox.Owner) ?? 0;
+            bool wouldBeLethal = hurtBox.Owner is BaseBrain brain &&
+                                 Mathf.Max(0, incomingDamage - brain.CurrentShield) >= brain.CurrentHP;
+
             EventBus.Publish(new DodgeSucceededEvent
             {
-                text = InvincibleTypeDB.Text.TryGetValue(invincibleType, out var t) ? t : "尚未登陸文字",
-                WorldPosition = hurtBox.transform.position + Vector3.up * 1.5f
+                text = InvincibleTypeDB.Text.TryGetValue(invincibleType, out string t) ? t : "Dodge",
+                WorldPosition = hurtBox.transform.position + Vector3.up * 1.5f,
+                incomingDamage = incomingDamage,
+                wouldBeLethal = wouldBeLethal
             });
             return;
         }
-        var damageable = hurtBox.Owner;
-        if (damageable == null || _hitSet.Contains(damageable)) return;
 
-        _hitSet.Add(damageable);
+        IDamageable damageable = hurtBox.Owner;
+        if (damageable == null || hitSet.Contains(damageable))
+            return;
+
+        hitSet.Add(damageable);
         Vector2 dir = (other.transform.position - transform.position).normalized;
         onHit?.Invoke(damageable, dir);
-
-
     }
-
 }

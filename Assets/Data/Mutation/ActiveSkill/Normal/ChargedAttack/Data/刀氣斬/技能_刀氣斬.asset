@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b87af90d3dfa0e145ae7160ae4ca5cc6, type: 3}
+  m_Name: "\u6280\u80FD_\u5200\u6C23\u65AC"
+  m_EditorClassIdentifier: 
+  skillId: blade_wave
+  minHoldDuration: 1
+  cooldown: 0
+  staminaCost: 20
+  damageProfile:
+    damageMode: 0
+    fixedDamage: 20
+    normalAttackMultiplier: 1
+    bonusDamage: 0
+    knockbackForce: 4
+    hitStopTime: 0.05
+  castEffect: {fileID: 11400000, guid: 4eebb01c887c7fa4a8875d3981cb553d, type: 2}

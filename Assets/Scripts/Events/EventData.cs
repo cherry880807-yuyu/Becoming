@@ -1,28 +1,25 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EventData : MonoBehaviour
 {
-
 }
 
-//---------------------------------------------成就類型
-public struct MutationUnlockedEvent //成功解所成就
+public struct MutationUnlockedEvent
 {
     public MutationDataSO mutation;
 }
 
-public struct AttackEnemyEvent//成功攻擊次數
+public struct AttackEnemyEvent
 {
     public float hitTime;
 }
 
-public struct DodgeSucceededEvent : IFloatingTextEvent  //成功閃避技能
+public struct DodgeSucceededEvent : IFloatingTextEvent
 {
-    // public DamageSourceType DamageSource; 未來可追蹤「閃避雷擊幾次」之類的條件
     public string text;
     public Vector3 WorldPosition;
+    public int incomingDamage;
+    public bool wouldBeLethal;
 
     public FloatingTextData GetFloatingText()
     {
@@ -37,8 +34,8 @@ public struct DodgeSucceededEvent : IFloatingTextEvent  //成功閃避技能
 
 public struct JumpEvent
 {
-
 }
+
 public struct DashEvent
 {
     public Vector3 WorldPosition;
@@ -50,16 +47,30 @@ public struct PlayerSprintDistanceEvent
     public float distance;
 }
 
+public struct PlayerHealthChangedEvent
+{
+    public int currentHP;
+    public int maxHP;
+    public float healthPercent;
+}
+
+public struct DeathProtectionStateChangedEvent
+{
+    public bool isUnlocked;
+    public bool isAvailable;
+}
+
 public struct CampfireHealEvent
 {
     public PlayerBrain player;
     public int healAmount;
 }
-//---------------------------------------------
+
 public struct DamageDealtEvent : IFloatingTextEvent
 {
     public int Damage;
     public Vector3 WorldPosition;
+
     public FloatingTextData GetFloatingText()
     {
         return new FloatingTextData
@@ -81,6 +92,7 @@ public struct HealEvent : IFloatingTextEvent
 {
     public int HealAmount;
     public Vector3 WorldPosition;
+
     public FloatingTextData GetFloatingText()
     {
         return new FloatingTextData
@@ -91,12 +103,11 @@ public struct HealEvent : IFloatingTextEvent
         };
     }
 }
-//---------------------------------------------
 
 public struct EnemyDiedEvent
 {
     public Vector3 WorldPosition;
-    public string EnemyId; // 給 MutationManager 用
+    public string EnemyId;
 }
 
 public struct PlayerDiedEvent
@@ -109,10 +120,9 @@ public struct PlayerRespawnedEvent
 {
     public Vector3 RespawnPosition;
 }
-//---------------------------------------------
+
 public struct GameStartedEvent
 {
-
 }
 
 public struct ExitRoomEvent
@@ -121,5 +131,20 @@ public struct ExitRoomEvent
     public Vector2 spawnPosition;
 }
 
-//---------------------------------------------
-public struct ResetAttackComboEvent { }
+public struct ResetAttackComboEvent
+{
+}
+
+public struct WeaponChangedEvent
+{
+    public PlayerBrain player;
+    public WeaponDataSO weapon;
+    public WeaponDataSO[] ownedWeapons;
+}
+
+public struct WeaponInventoryChangedEvent
+{
+    public PlayerBrain player;
+    public WeaponDataSO equippedWeapon;
+    public WeaponDataSO[] ownedWeapons;
+}

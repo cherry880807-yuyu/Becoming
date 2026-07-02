@@ -12,12 +12,12 @@ public class TrainingDummy : BaseBrain, IDamageable
         SetMaxHP(maxHP);
     }
 
-    public void TakeDamage(DamageInfo info)
+    public void TakeDamage(HitConfig hitConfig)
     {
         ApplyDamage(
-            info.damage,
-            info.hitDirection,
-            info.knockbackForce
+            hitConfig.Damage,
+            hitConfig.HitDirection,
+            hitConfig.KnockbackForce
         );
     }
 

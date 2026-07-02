@@ -10,11 +10,13 @@ public class PlayerBrain : BaseBrain, IDamageable
     [Header("Data")]
     [SerializeField] private CharacterDataSO characterData;
     [SerializeField] private MovementDataSO movementData;
-    [SerializeField] private DashDataSO dashData;
+    [SerializeField] private DodgeDataSO dashData;
     [SerializeField] private StaminaDataSO staminaData;
 
     [Header("WeaponData")]
     [SerializeField] private WeaponDataSO weapon;
+    [SerializeField] private WeaponDataSO testweapon1;
+    [SerializeField] private WeaponDataSO testweapon2;
 
     // ────────────────────────────────────────────────────
     public PlayerActorData PlayerActorData { get; private set; }
@@ -24,6 +26,9 @@ public class PlayerBrain : BaseBrain, IDamageable
     private bool _isGrounded;
     private bool _isDropping;
     private int _lastGroundedFrame = -1;
+    private bool hasDeathProtection;
+    private bool deathProtectionAvailable;
+    private float deathProtectionHealPercent;
 
     // ────────────────────────────────────────────────────
 
@@ -33,10 +38,15 @@ public class PlayerBrain : BaseBrain, IDamageable
         SetMaxHP(characterData.maxHP);
         SetShield(characterData.maxShield);
         BuildActorData();
+        if (PlayerLocator.IsInitialized)
+            PlayerLocator.Instance.Register(transform);
+        PublishHealthChanged();
+        PublishDeathProtectionState();
     }
     protected override void Start()
     {
-        PlayerLocator.Instance.Register(transform);
+        if (PlayerLocator.IsInitialized && PlayerLocator.Instance.PlayerBrain != this)
+            PlayerLocator.Instance.Register(transform);
     }
 
     protected override void OnEnable()
@@ -44,6 +54,7 @@ public class PlayerBrain : BaseBrain, IDamageable
         base.OnEnable();
         _input.OnDashPressed += HandleDash;
         _input.OnAttackPressed += HandleAttack;
+        _input.OnAttackReleased += HandleAttackReleased;
         _input.OnJumpPressed += HandleJump;
         _input.OnDownPressed += HandleDown;
     }
@@ -53,9 +64,10 @@ public class PlayerBrain : BaseBrain, IDamageable
         base.OnDisable();
         _input.OnDashPressed -= HandleDash;
         _input.OnAttackPressed -= HandleAttack;
+        _input.OnAttackReleased -= HandleAttackReleased;
         _input.OnJumpPressed -= HandleJump;
         _input.OnDownPressed -= HandleDown;
-        PlayerActorData?.AttackSystem?.Dispose();
+        PlayerActorData?.CombatSystem?.Dispose();
 
     }
     public void Oestroy()
@@ -74,12 +86,19 @@ public class PlayerBrain : BaseBrain, IDamageable
         );
         PlayerActorData.MovementSystem = new MovementSystem(PlayerActorData, new PlayerMovement_TypeA(movementData.moveSpeed, movementData.sprintSpeed));
         PlayerActorData.JumpSystem = new JumpSystem(PlayerActorData, movementData.baseAirJumps, movementData.jumpForce);
-        PlayerActorData.DashSystem = new DashSystem(new PlayerDash_TypeA(dashData), this);
-        PlayerActorData.AttackSystem = new AttackSystem(PlayerActorData, weapon);
         PlayerActorData.AnimationSystem = new AnimationSystem(PlayerActorData.Animator);
+        PlayerActorData.DodgeSystem = new DodgeSystem(new PlayerDodge_TypeA(dashData), this);
+        PlayerActorData.PlayerNormalAttackInputSystem = new PlayerNormalAttackInputSystem(PlayerActorData, null);
         PlayerActorData.StaminaSystem = new StaminaSystem(staminaData);
+        PlayerActorData.SkillSystem = new SkillSystem();
+        PlayerActorData.SkillInputSystem = new PlayerSkillInputSystem(this, PlayerActorData, _input);
+        PlayerActorData.CombatSystem = new PlayerCombatSystem(
+            PlayerActorData.PlayerNormalAttackInputSystem,
+            PlayerActorData.SkillInputSystem,
+            PlayerActorData.SkillSystem);
+        PlayerActorData.WeaponInventorySystem = new PlayerWeaponInventorySystem(this, PlayerActorData.CombatSystem, weapon);
 
-        _Hurtbox.Register(PlayerActorData.DashSystem);
+        _Hurtbox.Register(PlayerActorData.DodgeSystem);
     }
 
     // ── Unity Loop ────────────────────────────────────────
@@ -89,9 +108,15 @@ public class PlayerBrain : BaseBrain, IDamageable
         _isGrounded = GetGroundedCached();
         if (_isGrounded) PlayerActorData.JumpSystem.ResetAirJumps();
         PlayerActorData.StaminaSystem.Regen(Time.deltaTime);
-        PlayerActorData.AttackSystem.EvaluateCombo();
+        PlayerActorData.CombatSystem.Evaluate();
         HandleFacing();
         UpdateAnimationState();
+    }
+    public void TestUnLockWeapon()
+    {
+        PlayerActorData.WeaponInventorySystem.UnlockWeapon(weapon);
+        PlayerActorData.WeaponInventorySystem.UnlockWeapon(testweapon1);
+        PlayerActorData.WeaponInventorySystem.UnlockWeapon(testweapon2);
     }
 
     private void FixedUpdate()
@@ -112,24 +137,40 @@ public class PlayerBrain : BaseBrain, IDamageable
         float distance = Mathf.Abs(PlayerActorData.Rigidbody.velocity.x) * Time.fixedDeltaTime;
         if (distance <= 0f) return;
 
-        EventBus.Publish(new PlayerSprintDistanceEvent {distance = distance});
+        EventBus.Publish(new PlayerSprintDistanceEvent { distance = distance });
     }
 
     private void HandleDash()
     {
-        float dashCost = PlayerActorData.DashSystem.GetModifiedDashCost(dashData.dashCost);
-        if (!PlayerActorData.StaminaSystem.CanUse(dashCost)) return;
-        PlayerActorData.StaminaSystem.Consume(dashCost);
-        PlayerActorData.DashSystem.Execute(PlayerActorData.Rigidbody, _input.LastMoveDir);
+        if (PlayerActorData.CombatSystem.TryCancelSkillCast())
+            return;
+
+        float dodgeCost = PlayerActorData.DodgeSystem.GetModifiedDodgeCost(dashData.dodgeCost);
+        if (!PlayerActorData.StaminaSystem.CanUse(dodgeCost)) return;
+        PlayerActorData.StaminaSystem.Consume(dodgeCost);
+        PlayerActorData.DodgeSystem.Execute(PlayerActorData.Rigidbody, _input.LastMoveDir);
 
         EventBus.Publish(new DashEvent
         {
-            WorldPosition = new Vector3( transform.position.x,PlayerActorData.Collider.bounds.min.y,transform.position.z),
+            WorldPosition = new Vector3(transform.position.x, PlayerActorData.Collider.bounds.min.y, transform.position.z),
             FacingRight = PlayerActorData.Facing
         });
     }
 
-    private void HandleAttack() => PlayerActorData.AttackSystem.OnAttackInput();
+    private void HandleAttack()
+    {
+        PlayerActorData.CombatSystem.HandleAttackPressed(_isGrounded);
+    }
+
+    private void HandleAttackReleased(float holdDuration)
+    {
+        PlayerActorData.CombatSystem.HandleAttackReleased(holdDuration);
+    }
+
+    public void OnSkillCastFrame()
+    {
+        PlayerActorData.CombatSystem.TryExecutePendingSkillCast();
+    }
 
     private void HandleJump()
     {
@@ -139,7 +180,7 @@ public class PlayerBrain : BaseBrain, IDamageable
     }
     private void HandleDown()
     {
-        if (!_isGrounded || _isDropping || PlayerActorData.AttackSystem.IsAttacking) return;
+        if (!_isGrounded || _isDropping || PlayerActorData.CombatSystem.IsAttacking) return;
 
         StartCoroutine(DropPlatform_TimerBased());
     }
@@ -222,27 +263,26 @@ public class PlayerBrain : BaseBrain, IDamageable
 
         bool IsEnemyAlive = false;
         if (damageable is BaseBrain baseBrain) IsEnemyAlive = baseBrain.IsAlive;
-        float angleRad = PlayerActorData.AttackSystem.CurrentStep.KnockbackAngle * Mathf.Deg2Rad;
+        float angleRad = PlayerActorData.PlayerNormalAttackInputSystem.CurrentStep.KnockbackAngle * Mathf.Deg2Rad;
 
         EventBus.Publish(new PlayerDamageDealtEvent
         {
-            Damage = PlayerActorData.AttackSystem.FinalDamage,
+            Damage = PlayerActorData.PlayerNormalAttackInputSystem.FinalDamage,
             WorldPosition = transform.position
         });
 
-        damageable.TakeDamage(new DamageInfo
-        {
-            damage = PlayerActorData.AttackSystem.FinalDamage,
-            knockbackForce = PlayerActorData.AttackSystem.CurrentStep.knockbackForce,
-            hitDirection = new Vector2(Mathf.Cos(angleRad) * PlayerActorData.Facing.x, Mathf.Sin(angleRad)),
-            attackerPosition = (Vector2)transform.position
-        });
+        damageable.TakeDamage(new HitConfig(
+            PlayerActorData.PlayerNormalAttackInputSystem.FinalDamage,
+            new Vector2(Mathf.Cos(angleRad) * PlayerActorData.Facing.x, Mathf.Sin(angleRad)),
+            PlayerActorData.PlayerNormalAttackInputSystem.CurrentStep.knockbackForce,
+            transform.position,
+            PlayerActorData.PlayerNormalAttackInputSystem.CurrentStep.hitStopTime));
 
         if (IsEnemyAlive)
         {
             EventBus.Publish(new AttackEnemyEvent
             {
-                hitTime = PlayerActorData.AttackSystem.CurrentStep.hitStopTime
+                hitTime = PlayerActorData.PlayerNormalAttackInputSystem.CurrentStep.hitStopTime
             });
         }
         else
@@ -251,25 +291,109 @@ public class PlayerBrain : BaseBrain, IDamageable
         }
     }
 
-    public void TakeDamage(DamageInfo info)
+    protected override int GetHitDamagePreview(IDamageable target)
+    {
+        return PlayerActorData?.PlayerNormalAttackInputSystem?.FinalDamage ?? 0;
+    }
+
+    public void TakeDamage(HitConfig hitConfig)
     {
         if (!IsAlive) return;
-        FaceTowards(info.attackerPosition);
+        if (TryConsumeDeathProtection(hitConfig)) return;
+
+        FaceTowards(hitConfig.AttackerPosition);
         PlayerActorData.AnimationSystem.PlayHit();
-        ApplyDamage(info.damage, info.hitDirection, info.knockbackForce);
+        ApplyDamage(hitConfig.Damage, hitConfig.HitDirection, hitConfig.KnockbackForce);
+        PublishHealthChanged();
     }
 
     protected override void OnApplyKnockback(Vector2 dir, float force)
     {
         // Player 是否需要擊退由這裡控制
         // 例如：無敵幀期間不受擊退
-        if (PlayerActorData.DashSystem.IsDashing) return;
+        if (PlayerActorData.DodgeSystem.IsDodging) return;
         PlayerActorData.Rigidbody.AddForce(dir * force, ForceMode2D.Impulse);
     }
 
-    public void Heal(int amount) => ApplyHeal(amount);
+    public void Heal(int amount)
+    {
+        ApplyHeal(amount);
+        PublishHealthChanged();
+    }
 
     // ── Death ─────────────────────────────────────────────
+    public new void Respawn(int restoreHP)
+    {
+        base.Respawn(restoreHP);
+        ResetDeathProtectionForNewLife();
+        PublishHealthChanged();
+    }
+
+    public void EnableDeathProtection(float healPercent)//解鎖
+    {
+        hasDeathProtection = true;
+        deathProtectionHealPercent = healPercent;
+        ResetDeathProtectionForNewLife();
+        PublishDeathProtectionState();
+    }
+
+    public void DisableDeathProtection()//尚未解鎖
+    {
+        hasDeathProtection = false;
+        deathProtectionAvailable = false;
+        deathProtectionHealPercent = 0f;
+        PublishDeathProtectionState();
+    }
+
+    private bool TryConsumeDeathProtection(HitConfig hitConfig)
+    {
+        if (!hasDeathProtection || !deathProtectionAvailable)
+            return false;
+
+        int finalDamage = Mathf.Max(0, hitConfig.Damage - CurrentShield);
+        if (CurrentHP > finalDamage)
+            return false;
+
+        FaceTowards(hitConfig.AttackerPosition);
+        PlayerActorData.AnimationSystem.PlayHit();
+        deathProtectionAvailable = false;
+        ApplyDamage(hitConfig.Damage, hitConfig.HitDirection, hitConfig.KnockbackForce, false);
+
+        int healAmount = Mathf.CeilToInt(MaxHP * deathProtectionHealPercent);
+        if (healAmount > 0)
+            ApplyHeal(healAmount);
+
+        PublishHealthChanged();
+        PublishDeathProtectionState();
+        return true;
+    }
+
+    private void ResetDeathProtectionForNewLife()
+    {
+        if (!hasDeathProtection) return;
+        deathProtectionAvailable = true;
+        PublishDeathProtectionState();
+    }
+
+    private void PublishDeathProtectionState()
+    {
+        EventBus.Publish(new DeathProtectionStateChangedEvent
+        {
+            isUnlocked = hasDeathProtection,
+            isAvailable = hasDeathProtection && deathProtectionAvailable
+        });
+    }
+
+    private void PublishHealthChanged()
+    {
+        EventBus.Publish(new PlayerHealthChangedEvent
+        {
+            currentHP = CurrentHP,
+            maxHP = MaxHP,
+            healthPercent = MaxHP > 0 ? (float)CurrentHP / MaxHP : 0f
+        });
+    }
+
     protected override void HandleDeath()
     {
         base.HandleDeath(); // 觸發 OnDeath event
@@ -315,7 +439,7 @@ public class PlayerBrain : BaseBrain, IDamageable
         {
             velocity = PlayerActorData.Rigidbody.velocity,
             isGrounded = _isGrounded,
-            isDashing = PlayerActorData.DashSystem.IsDashing,
+            isDodging = PlayerActorData.DodgeSystem.IsDodging,
             isSprinting = _input.IsSprinting
         });
     }

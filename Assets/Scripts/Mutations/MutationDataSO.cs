@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-public enum SkillType
+public enum SkillType// Mutation 主分類
 {
     Passive,
     Active,
     WeaponMembrane
 }
-public enum SubCategory
+public enum SubCategory // Mutation 副分類
 {
     Movement,
     Jump,
@@ -31,8 +31,8 @@ public class MutationDataSO : ScriptableObject
     public string mutationName;
     public Sprite icon;
     public SkillType category;
-    public SubCategory passiveCategory;
-    public string selectionGroup = "Default";
+    public SubCategory subCategory;
+    public WeaponFamilySO mutationType;
     [Min(1)] public int selectionLimit = 1;
     [TextArea] public string lockedDescription;
     [TextArea] public string unlockedDescription;

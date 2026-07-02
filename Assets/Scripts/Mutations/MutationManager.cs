@@ -6,6 +6,9 @@ public class MutationManager : Singleton<MutationManager>
     [SerializeField] private List<MutationDataSO> allMutations;
     [SerializeField] private List<MutationDataSO> unlocked = new();
     [SerializeField] private List<MutationDataSO> selectedMutations = new();
+    private readonly HashSet<MutationDataSO> appliedMutations = new();
+    private WeaponDataSO currentWeapon;
+    private WeaponFamilySO currentMutationType;
 
     public IReadOnlyList<MutationDataSO> AllMutations => allMutations;
     public IReadOnlyList<MutationDataSO> UnlockedMutations => unlocked;
@@ -17,13 +20,27 @@ public class MutationManager : Singleton<MutationManager>
         DontDestroyOnLoad(gameObject);
     }
 
+    private void OnEnable()
+    {
+        EventBus.Subscribe<WeaponChangedEvent>(OnWeaponChanged);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe<WeaponChangedEvent>(OnWeaponChanged);
+    }
+
     //--------------------------------------------------計算是否解鎖
     public void EvaluateMutations(MutationContext context) //TODO 避免無差別檢查
     {
         if (allMutations == null) return;
+        if (context != null && context.equippedWeapon != currentWeapon)
+            SetCurrentWeapon(context.equippedWeapon, context.equippedMutationType);
+
         foreach (var mutation in allMutations)
         {
             if (mutation == null || unlocked.Contains(mutation)) continue;
+            if (!CanEvaluateForCurrentType(mutation, context)) continue;
             if (CanUnlock(mutation, context)) UnlockMutation(mutation);
         }
     }
@@ -48,22 +65,31 @@ public class MutationManager : Singleton<MutationManager>
         return mutation != null && selectedMutations.Contains(mutation);
     }
 
+    public bool CanSelectMutation(MutationDataSO mutation)
+    {
+        if (mutation == null || mutation.IsPassive) return false;
+        if (!IsUnlocked(mutation)) return false;
+        return IsRequiredTypeOwned(mutation);
+    }
+
     private bool IsSameSelectionGroup(MutationDataSO left, MutationDataSO right)
     {
-        return left.category == right.category && left.selectionGroup == right.selectionGroup;
+        return left.category == right.category &&
+               left.subCategory == right.subCategory &&
+               left.mutationType == right.mutationType;
     }
     //--------------------------------------------------解鎖、選擇與選擇超過數量的處理
     private void UnlockMutation(MutationDataSO mutation)
     {
         unlocked.Add(mutation);
         Debug.Log($"Unlock Mutation : {mutation.mutationName}");
-        EventBus.Publish(new MutationUnlockedEvent { mutation = mutation });
         if (mutation.IsPassive) EnableMutation(mutation);
+        EventBus.Publish(new MutationUnlockedEvent { mutation = mutation });
     }
 
     public void SelectMutation(MutationDataSO mutation)
     {
-        if (!IsUnlocked(mutation) || !mutation.RequiresSelection) return;
+        if (!CanSelectMutation(mutation)) return;
 
         if (selectedMutations.Contains(mutation))
         {
@@ -100,13 +126,13 @@ public class MutationManager : Singleton<MutationManager>
     {
         if (mutation == null || selectedMutations.Contains(mutation)) return;
         selectedMutations.Add(mutation);
-        ApplyEffects(mutation);
+        TryApplyEffects(mutation);
     }
 
     private void DisableMutation(MutationDataSO mutation)
     {
         if (mutation == null || !selectedMutations.Remove(mutation)) return;
-        RemoveEffects(mutation);
+        TryRemoveEffects(mutation);
     }
 
     //--------------------------------------------------效果啟用與停用
@@ -116,7 +142,7 @@ public class MutationManager : Singleton<MutationManager>
         if (target == null || mutation == null || mutation.effects == null) return;
         foreach (var effect in mutation.effects)
         {
-            if (effect != null) effect.Apply(target);
+            if (effect != null) effect.Apply(target, mutation);
         }
     }
 
@@ -126,7 +152,7 @@ public class MutationManager : Singleton<MutationManager>
         if (target == null || mutation == null || mutation.effects == null) return;
         foreach (var effect in mutation.effects)
         {
-            if (effect != null) effect.Remove(target);
+            if (effect != null) effect.Remove(target, mutation);
         }
     }
 
@@ -144,5 +170,72 @@ public class MutationManager : Singleton<MutationManager>
     {
         if (!PlayerLocator.IsInitialized || PlayerLocator.Instance.PlayerTransform == null) return null;
         return PlayerLocator.Instance.PlayerTransform.gameObject;
+    }
+
+    private bool CanEvaluateForCurrentType(MutationDataSO mutation, MutationContext context)
+    {
+        if (IsUniversalMutation(mutation)) return true;
+        return context != null && context.equippedMutationType == mutation.mutationType;
+    }
+
+    private bool CanApplyForCurrentWeapon(MutationDataSO mutation)
+    {
+        return IsUniversalMutation(mutation) || mutation.mutationType == currentMutationType;
+    }
+
+    private bool IsRequiredTypeOwned(MutationDataSO mutation)
+    {
+        if (IsUniversalMutation(mutation)) return true;
+        if (!PlayerLocator.IsInitialized || PlayerLocator.Instance.PlayerBrain == null) return false;
+
+        return PlayerLocator.Instance.PlayerBrain
+            .PlayerActorData?
+            .WeaponInventorySystem?
+            .IsTypeOwned(mutation.mutationType) == true;
+    }
+
+    private void TryApplyEffects(MutationDataSO mutation)
+    {
+        if (mutation == null || appliedMutations.Contains(mutation)) return;
+        if (!CanApplyForCurrentWeapon(mutation)) return;
+
+        ApplyEffects(mutation);
+        appliedMutations.Add(mutation);
+    }
+
+    private void TryRemoveEffects(MutationDataSO mutation)
+    {
+        if (mutation == null || !appliedMutations.Remove(mutation)) return;
+        RemoveEffects(mutation);
+    }
+
+    private void OnWeaponChanged(WeaponChangedEvent e)
+    {
+        SetCurrentWeapon(e.weapon, e.weapon != null ? e.weapon.mutationType : null);
+    }
+
+    private void SetCurrentWeapon(WeaponDataSO weapon, WeaponFamilySO mutationType)
+    {
+        if (currentWeapon == weapon && currentMutationType == mutationType) return;
+
+        currentWeapon = weapon;
+        currentMutationType = mutationType;
+        RefreshAppliedEffectsForCurrentWeapon();
+    }
+
+    private void RefreshAppliedEffectsForCurrentWeapon()
+    {
+        for (int i = selectedMutations.Count - 1; i >= 0; i--)
+            TryRemoveEffects(selectedMutations[i]);
+
+        for (int i = 0; i < selectedMutations.Count; i++)
+            TryApplyEffects(selectedMutations[i]);
+    }
+
+    private bool IsUniversalMutation(MutationDataSO mutation)
+    {
+        return mutation == null ||
+               mutation.mutationType == null ||
+               mutation.mutationType.isUniversal;
     }
 }

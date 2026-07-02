@@ -3,5 +3,5 @@ using System.Collections.Generic;
 using UnityEngine;
 public interface IDamageable
 {
-    void TakeDamage(DamageInfo damageInfo);
+    void TakeDamage(HitConfig hitConfig);
 }

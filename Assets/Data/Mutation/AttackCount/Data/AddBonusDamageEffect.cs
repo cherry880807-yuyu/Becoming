@@ -8,11 +8,11 @@ public class AddBonusDamageEffect: MutationEffect
 
     public override void Apply( GameObject target)
     {
-        target.GetComponent<PlayerBrain>().PlayerActorData.AttackSystem.AddBonusDamage(damage);
+        target.GetComponent<PlayerBrain>().PlayerActorData.PlayerNormalAttackInputSystem.AddBonusDamage(damage);
     }
 
     public override void Remove(GameObject target)
     {
-        target.GetComponent<PlayerBrain>().PlayerActorData.AttackSystem.RemoveBonusDamage(damage);
+        target.GetComponent<PlayerBrain>().PlayerActorData.PlayerNormalAttackInputSystem.RemoveBonusDamage(damage);
     }
 }

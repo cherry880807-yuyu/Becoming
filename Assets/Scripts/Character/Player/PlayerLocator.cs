@@ -29,6 +29,13 @@ public class PlayerLocator : Singleton<PlayerLocator>
     }
     public void SetPosition(Vector2 position)
     {
+        EnsurePlayerReference();
+        if (PlayerBrain == null || PlayerTransform == null || PlayerBrain.PlayerActorData == null)
+        {
+            Debug.LogError("[PlayerLocator] PlayerBrain is not registered, cannot set player position.");
+            return;
+        }
+
         var collider = PlayerBrain.PlayerActorData.Collider;
         collider.enabled = false;
 
@@ -41,5 +48,14 @@ public class PlayerLocator : Singleton<PlayerLocator>
     {
         yield return null; // 等一幀
         collider.enabled = true;
+    }
+    private void EnsurePlayerReference()
+    {
+        if (PlayerBrain != null && PlayerTransform != null)
+            return;
+
+        PlayerBrain player = FindObjectOfType<PlayerBrain>();
+        if (player != null)
+            Register(player.transform);
     }
 }

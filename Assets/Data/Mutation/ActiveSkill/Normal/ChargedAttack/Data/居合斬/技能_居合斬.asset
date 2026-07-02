@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b87af90d3dfa0e145ae7160ae4ca5cc6, type: 3}
+  m_Name: "\u6280\u80FD_\u5C45\u5408\u65AC"
+  m_EditorClassIdentifier: 
+  skillId: iai_slash
+  displayName: "\u5C45\u5408\u65AC"
+  category: 0
+  minHoldDuration: 1
+  cooldown: 0
+  staminaCost: 20
+  damageProfile:
+    damageMode: 1
+    fixedDamage: 10
+    normalAttackMultiplier: 1.25
+    bonusDamage: 0
+    knockbackForce: 6
+    hitStopTime: 0.08
+  castEffect: {fileID: 11400000, guid: 925ae8ce3b19c7345ad76b2cc432ace5, type: 2}

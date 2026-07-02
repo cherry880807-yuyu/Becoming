@@ -19,6 +19,17 @@ public class MutationTracker : MonoBehaviour
         EventBus.Subscribe<DashEvent>(OnPlayerDashed);
         EventBus.Subscribe<EnemyDiedEvent>(OnEnemyDied);
         EventBus.Subscribe<CampfireHealEvent>(OnCampfireHealed);
+        EventBus.Subscribe<PlayerHealthChangedEvent>(OnPlayerHealthChanged);
+        EventBus.Subscribe<WeaponChangedEvent>(OnWeaponChanged);
+    }
+
+    private IEnumerator Start()
+    {
+        while (!MutationManager.IsInitialized)
+            yield return null;
+
+        SyncCurrentWeaponFromPlayer();
+        EvaluateMutations();
     }
 
     private void OnDisable()
@@ -31,54 +42,86 @@ public class MutationTracker : MonoBehaviour
         EventBus.Unsubscribe<DashEvent>(OnPlayerDashed);
         EventBus.Unsubscribe<EnemyDiedEvent>(OnEnemyDied);
         EventBus.Unsubscribe<CampfireHealEvent>(OnCampfireHealed);
+        EventBus.Unsubscribe<PlayerHealthChangedEvent>(OnPlayerHealthChanged);
+        EventBus.Unsubscribe<WeaponChangedEvent>(OnWeaponChanged);
     }
 
     private void OnEnemyAttacked(AttackEnemyEvent e)
     {
         Context.totalAttackCount++;
-        MutationManager.Instance.EvaluateMutations(Context);
+        EvaluateMutations();
     }
 
     private void OnPlayerDodgeSucceed(DodgeSucceededEvent e)
     {
         Context.dodgeSucceedCount++;
-        MutationManager.Instance.EvaluateMutations(Context);
+        if (e.wouldBeLethal) Context.totalLethalDodgeCount++;
+        EvaluateMutations();
     }
 
     private void OnPlayerJumped(JumpEvent e)
     {
         Context.totalJumpCount++;
-        MutationManager.Instance.EvaluateMutations(Context);
+        EvaluateMutations();
     }
 
     private void OnPlayerDied(PlayerDiedEvent e)
     {
         Context.deathCount++;
-        MutationManager.Instance.EvaluateMutations(Context);
+        EvaluateMutations();
     }
 
     private void OnPlayerSprintDistanceChanged(PlayerSprintDistanceEvent e)
     {
         Context.totalSprintDistance += e.distance;
-        MutationManager.Instance.EvaluateMutations(Context);
+        EvaluateMutations();
     }
 
     private void OnPlayerDashed(DashEvent e)
     {
         Context.totalDashCount++;
-        MutationManager.Instance.EvaluateMutations(Context);
+        EvaluateMutations();
     }
 
     private void OnEnemyDied(EnemyDiedEvent e)
     {
         Context.enemyKillsSinceCampfireHeal++;
-        MutationManager.Instance.EvaluateMutations(Context);
+        EvaluateMutations();
     }
 
     private void OnCampfireHealed(CampfireHealEvent e)
     {
         Context.enemyKillsSinceCampfireHeal = 0;
+        EvaluateMutations();
+    }
+
+    private void OnPlayerHealthChanged(PlayerHealthChangedEvent e)
+    {
+        Context.playerHealthPercent = e.healthPercent;
+        EvaluateMutations();
+    }
+
+    private void OnWeaponChanged(WeaponChangedEvent e)
+    {
+        Context.equippedWeapon = e.weapon;
+        Context.equippedMutationType = e.weapon != null ? e.weapon.mutationType : null;
+        EvaluateMutations();
+    }
+
+    private void EvaluateMutations()
+    {
+        if (!MutationManager.IsInitialized) return;
         MutationManager.Instance.EvaluateMutations(Context);
+    }
+
+    private void SyncCurrentWeaponFromPlayer()
+    {
+        if (!PlayerLocator.IsInitialized || PlayerLocator.Instance.PlayerBrain == null) return;
+        Context.equippedWeapon = PlayerLocator.Instance.PlayerBrain
+            .PlayerActorData?
+            .WeaponInventorySystem?
+            .EquippedWeapon;
+        Context.equippedMutationType = Context.equippedWeapon != null ? Context.equippedWeapon.mutationType : null;
     }
 
 }

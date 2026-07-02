@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public interface IDash
+public interface IDodge
 {
-    IEnumerator Dash(Rigidbody2D rb, Vector2 dir);
+    IEnumerator Dodge(Rigidbody2D rb, Vector2 dir);
 }

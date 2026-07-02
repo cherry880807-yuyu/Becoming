@@ -9,13 +9,13 @@ public sealed class ReduceDashCostPercentEffect : MutationEffect
     {
         PlayerBrain player = target.GetComponent<PlayerBrain>();
         if (player == null) return;
-        player.PlayerActorData.DashSystem.AddDashCostReductionPercent(percent);
+        player.PlayerActorData.DodgeSystem.AddDodgeCostReductionPercent(percent);
     }
 
     public override void Remove(GameObject target)
     {
         PlayerBrain player = target.GetComponent<PlayerBrain>();
         if (player == null) return;
-        player.PlayerActorData.DashSystem.RemoveDashCostReductionPercent(percent);
+        player.PlayerActorData.DodgeSystem.RemoveDodgeCostReductionPercent(percent);
     }
 }
